@@ -8,7 +8,13 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: Run tests on ${{ matrix.os }}, Node ${{ matrix.node-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16]
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
