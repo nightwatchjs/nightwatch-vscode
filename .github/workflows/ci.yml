@@ -1,0 +1,34 @@
+name: VS Code Extension CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    name: Run tests on ${{ matrix.os }}, Node ${{ matrix.node-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [16]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run compile
+      - run: npx vsce package
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16'
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16'
+        with:
+          name: vsc-extension
+          path: "*.vsix"
+          retention-days: 30
