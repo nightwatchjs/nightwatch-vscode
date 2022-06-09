@@ -10,6 +10,7 @@
 		"name": "Vaibhav Singh",
 		"email": "vaibhav.s@browserstack.com"
 	},
+	"repository": "https://github.com/nightwatchjs/nightwatch-vscode",
 	"engines": {
 		"vscode": "^1.67.0"
 	},
