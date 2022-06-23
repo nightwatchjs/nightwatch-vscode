@@ -41,6 +41,7 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
   
   if (result?.length === 0) {
     vscode.window.showErrorMessage('You haven\'t selected any browsers');
+    return;
   }
 
   const terminal = vscode.window.createTerminal({
