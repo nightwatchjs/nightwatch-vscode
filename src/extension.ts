@@ -1,25 +1,34 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import { installNightwatch } from "./installer";
+import * as vsCodeTypes from "./types/vscodeTypes";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "nightwatch-vscode" is now active!');
-
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand('nightwatch-vscode.helloWorld', () => {
-    // The code you place here will be executed every time your command is executed
-    // Display a message box to the user
-    vscode.window.showInformationMessage('Hello World from nightwatch!!');
-  });
-
-  context.subscriptions.push(disposable);
+export async function activate(context: vsCodeTypes.ExtensionContext): Promise<void> {
+  new Extension(require('vscode')).activate(context);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+export class Extension {
+  private _vscode: vsCodeTypes.VSCode;
+  
+  constructor(vscode: vsCodeTypes.VSCode) {
+    this._vscode = vscode;
+  }
+
+  public async activate(context: vsCodeTypes.ExtensionContext): Promise<void> {
+    // TODO: Remove console.log before MVP release
+    console.log('extension "nightwatch-vscode" is now active!');
+
+    const vscode = this._vscode;
+
+    const disposable = [
+      vscode.commands.registerCommand('nightwatch.installNightwatch', () => {
+       installNightwatch(this._vscode);
+      }),
+    ];
+
+    context.subscriptions.push(...disposable);
+  }
+}

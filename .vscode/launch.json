@@ -10,11 +10,13 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/sandbox"
 			],
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],
+			"internalConsoleOptions": "openOnSessionStart",
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{

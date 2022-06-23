@@ -10,22 +10,43 @@
 		"name": "Vaibhav Singh",
 		"email": "vaibhav.s@browserstack.com"
 	},
-	"repository": "https://github.com/nightwatchjs/nightwatch-vscode",
+	"qna": "",
+	"license": "MIT",
+	"homepage": "https://github.com/nightwatchjs/nightwatch-vscode",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nightwatchjs/nightwatch-vscode"
+	},
+	"bugs": {
+		"url": "https://github.com/nightwatchjs/nightwatch-vscode/issues"
+	},
 	"engines": {
 		"vscode": "^1.67.0"
 	},
 	"categories": [
-		"Other"
+		"Other",
+		"Testing"
 	],
 	"activationEvents": [
-		"onCommand:nightwatch-vscode.helloWorld"
+		"onCommand:nightwatch.installNightwatch"
 	],
 	"main": "./dist/extension.js",
+	"browser": "./dist/extension.js",
 	"contributes": {
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "nightwatch.installNightwatch",
+					"group": "Test",
+					"when": "!virtualWorkspace && shellExecutionSupported"
+				}
+			]
+		},
 		"commands": [
 			{
-				"command": "nightwatch-vscode.helloWorld",
-				"title": "Hello World"
+				"category": "Test",
+				"command": "nightwatch.installNightwatch",
+				"title": "%nightwatch.command.nightwatch.installation.title%"
 			}
 		]
 	},
@@ -41,19 +62,22 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.67.0",
 		"@types/glob": "^7.2.0",
 		"@types/mocha": "^9.1.1",
 		"@types/node": "16.x",
+		"@types/vscode": "^1.68.0",
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
+		"@vscode/test-electron": "^2.1.3",
 		"eslint": "^8.16.0",
 		"glob": "^8.0.3",
 		"mocha": "^10.0.0",
-		"typescript": "^4.7.2",
 		"ts-loader": "^9.3.0",
+		"typescript": "^4.7.4",
 		"webpack": "^5.72.1",
-		"webpack-cli": "^4.9.2",
-		"@vscode/test-electron": "^2.1.3"
+		"webpack-cli": "^4.9.2"
+	},
+	"dependencies": {
+		"vscode-nls": "^5.0.1"
 	}
 }
