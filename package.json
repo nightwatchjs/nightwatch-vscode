@@ -21,7 +21,7 @@
 		"url": "https://github.com/nightwatchjs/nightwatch-vscode/issues"
 	},
 	"engines": {
-		"vscode": "^1.67.0"
+		"vscode": "^1.68.0"
 	},
 	"categories": [
 		"Other",
