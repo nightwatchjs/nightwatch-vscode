@@ -1,5 +1,6 @@
 import { installNightwatch } from "./installer";
 import * as vsCodeTypes from "./types/vscodeTypes";
+import "./setupNLS";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
