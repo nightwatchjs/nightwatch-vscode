@@ -1,4 +1,4 @@
-import * as vsCodeTypes from './types/vscodeTypes';
+import * as vsCodeTypes from '../types/vscodeTypes';
 
 export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<void> {
   const [workspaceFolder] = vscode.workspace.workspaceFolders || [];

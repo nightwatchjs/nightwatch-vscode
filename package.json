@@ -28,7 +28,8 @@
 		"Testing"
 	],
 	"activationEvents": [
-		"onCommand:nightwatch.installNightwatch"
+		"workspaceContains:nightwatch.conf.js",
+		"onCommand:com.nightwatch.nightwatchExt.install-nightwatch"
 	],
 	"main": "./dist/extension.js",
 	"browser": "./dist/extension.js",
@@ -36,16 +37,16 @@
 		"menus": {
 			"commandPalette": [
 				{
-					"command": "nightwatch.installNightwatch",
-					"group": "Test",
+					"command": "com.nightwatch.nightwatchExt.install-nightwatch",
+					"group": "Nightwatch",
 					"when": "!virtualWorkspace && shellExecutionSupported"
 				}
 			]
 		},
 		"commands": [
 			{
-				"category": "Test",
-				"command": "nightwatch.installNightwatch",
+				"category": "Nightwatch",
+				"command": "com.nightwatch.nightwatchExt.install-nightwatch",
 				"title": "%nightwatch.command.nightwatch.installation.title%"
 			}
 		]
