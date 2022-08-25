@@ -8,10 +8,9 @@ export class NightwatchExt {
     this.vscodeContext = vscodeContext;
   }
 
-  /**
-   * name
-   */
   public async installNightwatch(vscode: vsCodeTypes.VSCode) {
     installNightwatch(vscode);
   }
+
+  // TODO: Add run test
 }
