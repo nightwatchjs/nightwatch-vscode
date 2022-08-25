@@ -6,8 +6,16 @@ import { NightwatchExt } from './NightwatchExt';
 let extensionManager: ExtensionManager;
 
 const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
-  const installNightwatch = (extension: NightwatchExt, vscode: vsCodeTypes.VSCode) => {
-    extension.installNightwatch(vscode);
+  const installNightwatch = (extension: NightwatchExt) => {
+    extension.installNightwatch();
+  };
+
+  const runAllTests = (extension: NightwatchExt) => {
+    extension.runTests();
+  };
+
+  const debugAllTests = (extension: NightwatchExt) => {
+    extension.debugTests();
   };
 
   context.subscriptions.push(
@@ -15,6 +23,16 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
       type: 'all-workspaces',
       name: 'install-nightwatch',
       callback: installNightwatch,
+    }),
+    extensionManager.registerCommand({
+      type: 'active-text-editor',
+      name: 'run-test',
+      callback: runAllTests,
+    }),
+    extensionManager.registerCommand({
+      type: 'active-text-editor',
+      name: 'debug-test',
+      callback: debugAllTests,
     })
   );
 };
@@ -31,4 +49,6 @@ export async function activate(context: vsCodeTypes.ExtensionContext): Promise<v
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  extensionManager.deactivate();
+}

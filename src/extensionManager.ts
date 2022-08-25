@@ -3,9 +3,11 @@ import * as vsCodeTypes from './types/vscodeTypes';
 import { NightwatchExt } from './NightwatchExt';
 import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './types/extensionTypes';
 import { extensionName } from './appGlobals';
+import { NightwatchTest } from './NightwatchExt/nightwatchtest';
 
 const commandPrefix: Record<CommandType, string> = {
-  'all-workspaces': `${extensionName}.nightwatchExt`,
+  'all-workspaces': `${extensionName}`,
+  'active-text-editor': `${extensionName}`,
 };
 
 export class ExtensionManager {
@@ -30,7 +32,7 @@ export class ExtensionManager {
   }
 
   register(workspaceFolder: vsCodeTypes.WorkspaceFolder): void {
-    const nightwatchExt = new NightwatchExt(this.context);
+    const nightwatchExt = new NightwatchExt(this._vscode, this.context, workspaceFolder, new NightwatchTest());
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
   }
 
@@ -46,7 +48,7 @@ export class ExtensionManager {
     }
   };
 
-  registerCommand(command: RegisterCommand): vsCodeTypes.Disposable {
+  registerCommand(command: RegisterCommand, thisArg?: any): vsCodeTypes.Disposable {
     const vscode = this._vscode;
     const commandName = `${commandPrefix[command.type]}.${command.name}`;
 
@@ -57,10 +59,40 @@ export class ExtensionManager {
             const extension = this.getByExtName(workspace.name);
 
             if (extension) {
-              command.callback(extension, vscode, ...args);
+              command.callback(extension, ...args);
             }
           });
         });
+      case 'active-text-editor':
+        return vscode.commands.registerCommand(commandName, async (...args: any[]) => {
+          const extension = await this.selectExtension();
+          if (extension) {
+            command.callback.call(thisArg, extension, ...args);
+          }
+        });
+    }
+  }
+
+  async selectExtension(): Promise<NightwatchExt | undefined> {
+    const vscode = this._vscode;
+    const workspace =
+      vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length <= 1
+        ? vscode.workspace.workspaceFolders[0]
+        : await vscode.window.showWorkspaceFolderPick();
+
+    const instance = workspace && this.getByExtName(workspace.name);
+    if (instance) {
+      return instance;
+    } else if (workspace) {
+      throw new Error(`No Nightwatch instance in ${workspace.name} workspace`);
+    }
+  }
+
+  unregisterByName(key: string): void {
+    const extension = this.extByWorkspace.get(key);
+
+    if (extension) {
+      this.extByWorkspace.delete(key);
     }
   }
 
@@ -70,11 +102,17 @@ export class ExtensionManager {
 
     if (vscodeActiveDocumentUri) {
       const extension = this.getByDocumentUri(vscodeActiveDocumentUri);
-      console.log('**extension:', extension);
 
-      // if (extension) {
-      //   extension.installNightwatch();
-      // }
+      if (extension) {
+        extension.activate();
+      }
+    }
+  }
+
+  deactivate(): void {
+    const keys = this.extByWorkspace.keys();
+    for (const key of keys) {
+      this.unregisterByName(key);
     }
   }
 }
