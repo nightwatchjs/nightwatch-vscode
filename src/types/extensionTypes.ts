@@ -1,5 +1,6 @@
 import * as VSCode from './vscodeTypes';
 import { NightwatchExt } from '../NightwatchExt';
+import { NightwatchExtensionResourceSettings } from '../Settings/types';
 
 export type GetNightwatchExtByURI = (uri: VSCode.Uri) => NightwatchExt | undefined;
 
@@ -20,4 +21,5 @@ export type CommandType = RegisterCommand['type'];
 // TODO: Add Logging capability
 export type NightwatchExtContext = {
   workspace: VSCode.WorkspaceFolder;
+  settings: NightwatchExtensionResourceSettings;
 };

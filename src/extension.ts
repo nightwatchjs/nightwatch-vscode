@@ -42,7 +42,7 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
 export async function activate(context: vsCodeTypes.ExtensionContext): Promise<void> {
   // TODO: Remove console.log before MVP release
   console.log('extension "nightwatch-vscode" is now active!');
-
+  // TODO: Activate only if nightwatch is present in Package.json
   extensionManager = new ExtensionManager(require('vscode'), context);
   addSubscriptions(context);
   extensionManager.activate();

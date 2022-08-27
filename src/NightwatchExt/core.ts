@@ -1,5 +1,7 @@
+import { NightwatchExtensionResourceSettings } from '../Settings/types';
 import { NightwatchExtContext } from '../types/extensionTypes';
 import * as vsCodeTypes from '../types/vscodeTypes';
+import { getExtensionResourceSettings } from './helper';
 import { installNightwatch } from './installer';
 import { NightwatchTest } from './nightwatchtest';
 
@@ -13,15 +15,17 @@ export class NightwatchExt {
     private workspaceFolder: vsCodeTypes.WorkspaceFolder,
     private _nightwatchTest: NightwatchTest
   ) {
-    this.vscodeContext = vscodeContext;
-    this.extContext = this.createNightwatchExtContext(workspaceFolder);
-    this._nightwatchTest = _nightwatchTest;
     vscode = _vscode;
+    this.vscodeContext = vscodeContext;
+    this._nightwatchTest = _nightwatchTest;
+    const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
+    this.extContext = this.createNightwatchExtContext(workspaceFolder, getNightwatchExtensionSettings);
   }
 
-  createNightwatchExtContext(workspaceFolder: vsCodeTypes.WorkspaceFolder): NightwatchExtContext {
+  createNightwatchExtContext(workspaceFolder: vsCodeTypes.WorkspaceFolder, settings: NightwatchExtensionResourceSettings): NightwatchExtContext {
     return {
       workspace: workspaceFolder,
+      settings
     };
   }
 

@@ -71,7 +71,38 @@
 				"command": "com.nightwatch.nightwatchExt.debug-test",
 				"title": "%nightwatch.command.nightwatch.debugTest.title%"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Nightwatch",
+			"properties": {
+				"nightwatch.shell": {
+					"markdownDescription": "Shell path or login-shell to override the NIghtwatch runner process default shell (see node [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) for more details)",
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"scope": "resource"
+				},
+				"nightwatch.showTerminalOnLaunch": {
+					"description": "Automatically open test explorer's terminal upon launch",
+					"type": "boolean",
+					"default": true,
+					"scope": "window"
+				},
+				"nightwatch.nightwatchCommandLine": {
+					"description": "Command line to start Nightwatch tests. This should be the same command line that users run nightwatch tests from a terminal/shell, with the ability to add additional arguments (by extension at runtime)",
+					"type": "string",
+					"scope": "resource"
+				},
+				"nightwatch.testPath": {
+					"description": "The path to your e2e test folder",
+					"type": "string",
+					"default": "",
+					"scope": "resource"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
