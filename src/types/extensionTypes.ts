@@ -1,6 +1,7 @@
 import * as VSCode from './vscodeTypes';
 import { NightwatchExt } from '../NightwatchExt';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
+import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 
 export type GetNightwatchExtByURI = (uri: VSCode.Uri) => NightwatchExt | undefined;
 
@@ -22,4 +23,5 @@ export type CommandType = RegisterCommand['type'];
 export type NightwatchExtContext = {
   workspace: VSCode.WorkspaceFolder;
   settings: NightwatchExtensionResourceSettings;
+  createRunnerWorkspace: () => Promise<ProjectWorkspace>;
 };

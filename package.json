@@ -100,6 +100,21 @@
 					"type": "string",
 					"default": "",
 					"scope": "resource"
+				},
+				"nightwatch.nodeEnv": {
+					"markdownDescription": "The env passed to runner process in addition to `process.env`",
+					"type": [
+						"object",
+						"null"
+					],
+					"default": null,
+					"scope": "resource"
+				},
+				"nightwatch.debugMode": {
+					"description": "Enable debug mode to diagnose extension issues. (see developer console)",
+					"type": "boolean",
+					"default": false,
+					"scope": "resource"
 				}
 			}
 		}

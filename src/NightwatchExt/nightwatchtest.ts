@@ -3,6 +3,8 @@ import * as vsCodeTypes from '../types/vscodeTypes';
 import which from 'which';
 import path = require('path');
 import { debugSessionName } from '../appGlobals';
+import { NightwatchExtContext } from '../types/extensionTypes';
+import { createProcess } from '../NightwatchRunner/process';
 
 /**
  * TODO: List if items need to take care of
@@ -16,35 +18,22 @@ import { debugSessionName } from '../appGlobals';
 export class NightwatchTest {
   constructor() {}
 
-  async runAllTests(vscode: vsCodeTypes.VSCode) {
+  async runAllTests(extContext: NightwatchExtContext, vscode: vsCodeTypes.VSCode) {
     if (vscode.workspace.workspaceFolders) {
-      console.log('**************', vscode.workspace.workspaceFolders[0].uri.path);
-      const node = await which('node');
-      const nightwatchCLI = path.join(
-        vscode.workspace.workspaceFolders[0].uri.path,
-        'node_modules',
-        '.bin',
-        'nightwatch'
-      );
-      const command = `${node} ${nightwatchCLI} ${vscode.workspace.workspaceFolders[0].uri.path}/ecosia.js -e chrome`;
-      console.log('command used>>>>>>>>>>>>>', command);
+      const runnerWorkspace = await extContext.createRunnerWorkspace();
 
-      try {
-        const child = spawnSync(`${command}`, [], { shell: true, encoding: 'utf-8' });
-        if (child.status === 0) {
-          console.log('Test run successfull');
-        } else {
-          console.error(child.stderr);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+      const childProcess = createProcess(runnerWorkspace, [
+        `${vscode.workspace.workspaceFolders[0].uri.path}/ecosia.js`,
+      ]);
+
+      childProcess.on('data', (data) => {
+        console.log(data);
+      });
     }
   }
 
   async debugAllTests(vscode: vsCodeTypes.VSCode) {
     if (vscode.workspace.workspaceFolders) {
-      const node = await which('node');
       const nightwatchCLI = path.join(
         vscode.workspace.workspaceFolders[0].uri.path,
         'node_modules',
