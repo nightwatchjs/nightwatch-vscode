@@ -1,6 +1,4 @@
-import { spawnSync } from 'child_process';
 import * as vsCodeTypes from '../types/vscodeTypes';
-import which from 'which';
 import path = require('path');
 import { debugSessionName } from '../appGlobals';
 import { NightwatchExtContext } from '../types/extensionTypes';

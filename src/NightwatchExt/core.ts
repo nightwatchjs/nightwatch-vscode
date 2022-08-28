@@ -1,4 +1,3 @@
-import { NightwatchExtensionResourceSettings } from '../Settings/types';
 import { NightwatchExtContext } from '../types/extensionTypes';
 import * as vsCodeTypes from '../types/vscodeTypes';
 import { createNightwatchExtContext, getExtensionResourceSettings } from './helper';

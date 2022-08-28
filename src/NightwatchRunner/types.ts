@@ -6,3 +6,7 @@ export interface ProjectWorkspaceConfig {
   nodeEnv: { [key: string]: string | undefined };
   shell: string;
 }
+
+export type Options = {
+  env?: string;
+};
