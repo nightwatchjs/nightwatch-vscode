@@ -2,6 +2,7 @@ import * as vsCodeTypes from './types/vscodeTypes';
 import './setupNLS';
 import { ExtensionManager } from './extensionManager';
 import { NightwatchExt } from './NightwatchExt';
+import * as vscode from 'vscode';
 
 let extensionManager: ExtensionManager;
 
@@ -33,7 +34,11 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
       type: 'active-text-editor',
       name: 'debug-test',
       callback: debugAllTests,
-    })
+    }),
+    vscode.workspace.onDidChangeConfiguration(
+      extensionManager.onDidChangeConfiguration,
+      extensionManager
+    )
   );
 };
 
@@ -43,7 +48,7 @@ export async function activate(context: vsCodeTypes.ExtensionContext): Promise<v
   // TODO: Remove console.log before MVP release
   console.log('extension "nightwatch-vscode" is now active!');
   // TODO: Activate only if nightwatch is present in Package.json
-  extensionManager = new ExtensionManager(require('vscode'), context);
+  extensionManager = new ExtensionManager(vscode, context);
   addSubscriptions(context);
   extensionManager.activate();
 }

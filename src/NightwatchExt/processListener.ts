@@ -127,8 +127,8 @@ export class RunTestListener extends AbstractProcessListener {
 
   protected onProcessClose(process: NightwatchProcess): void {
     super.onProcessClose(process);
-    const error = `Nightwatch process "${process.request.type}" ended unexpectedly`;
-    this.onRunEvent.fire({ type: 'exit', process, error });
+    // const error = `Nightwatch process "${process.request.type}" ended unexpectedly`;
+    this.onRunEvent.fire({ type: 'exit', process });
   }
 }
 

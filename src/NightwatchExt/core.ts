@@ -10,8 +10,9 @@ import {
 import * as vsCodeTypes from '../types/vscodeTypes';
 import { createNightwatchExtContext, getExtensionResourceSettings } from './helper';
 import { installNightwatch } from './installer';
-import { NightwatchTest } from './nightwatchTest';
 import { createProcessSession } from './processSession';
+import { DebugConfigurationProvider } from './debugConfigurationProvider';
+import { NightwatchExtensionResourceSettings } from '../Settings/types';
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
@@ -26,11 +27,10 @@ export class NightwatchExt {
     private _vscode: vsCodeTypes.VSCode,
     private vscodeContext: vsCodeTypes.ExtensionContext,
     private workspaceFolder: vsCodeTypes.WorkspaceFolder,
-    private _nightwatchTest: NightwatchTest
+    private debugConfigurationProvider: DebugConfigurationProvider,
   ) {
     vscode = _vscode;
     this.vscodeContext = vscodeContext;
-    this._nightwatchTest = _nightwatchTest;
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
     this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);
     this.logging = this.extContext.loggingFactory.create('NightwatchExt');
@@ -42,6 +42,7 @@ export class NightwatchExt {
     };
     this.setupRunEvents(this.events);
     this.processSession = this.createProcessSession();
+    this.debugConfigurationProvider = debugConfigurationProvider;
   }
 
   public async installNightwatch() {
@@ -67,6 +68,11 @@ export class NightwatchExt {
       this.dirtyFiles.clear();
       return;
     }
+  }
+
+  public debugAllTests(): void {
+    const debugConfig = this.debugConfigurationProvider.provideDebugConfigurations(this.extContext.workspace).pop()!;
+    vscode.debug.startDebugging(this.extContext.workspace, debugConfig);
   }
 
   private createProcessSession(): ProcessSession {
@@ -108,12 +114,18 @@ export class NightwatchExt {
     });
   }
 
+  public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): void {
+    const updatedSettings = newSettings ?? getExtensionResourceSettings(vscode, this.extContext.workspace.uri);
+
+    this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings);
+    this.processSession = this.createProcessSession();
+  }
+
   async runTests(): Promise<void> {
-    // await this._nightwatchTest.runAllTests(this.extContext, vscode);
     await this.runAllTests();
   }
 
   async debugTests(): Promise<void> {
-    await this._nightwatchTest.debugAllTests(vscode);
+    await this.debugAllTests();
   }
 }

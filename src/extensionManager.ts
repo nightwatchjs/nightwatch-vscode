@@ -3,7 +3,7 @@ import * as vsCodeTypes from './types/vscodeTypes';
 import { NightwatchExt } from './NightwatchExt';
 import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './NightwatchExt/types';
 import { extensionName } from './appGlobals';
-import { NightwatchTest } from './NightwatchExt/nightwatchTest';
+import { DebugConfigurationProvider } from './NightwatchExt/debugConfigurationProvider';
 
 const commandPrefix: Record<CommandType, string> = {
   'all-workspaces': `${extensionName}`,
@@ -13,12 +13,14 @@ const commandPrefix: Record<CommandType, string> = {
 export class ExtensionManager {
   private _vscode: vsCodeTypes.VSCode;
   private context: vsCodeTypes.ExtensionContext;
+  private debugConfigurationProvider: DebugConfigurationProvider;
 
   private extByWorkspace: Map<string, NightwatchExt> = new Map();
 
   constructor(vscode: vsCodeTypes.VSCode, context: vsCodeTypes.ExtensionContext) {
     this._vscode = vscode;
     this.context = context;
+    this.debugConfigurationProvider = new DebugConfigurationProvider();
     this.applyWorkspaces();
   }
 
@@ -32,7 +34,12 @@ export class ExtensionManager {
   }
 
   register(workspaceFolder: vsCodeTypes.WorkspaceFolder): void {
-    const nightwatchExt = new NightwatchExt(this._vscode, this.context, workspaceFolder, new NightwatchTest());
+    const nightwatchExt = new NightwatchExt(
+      this._vscode,
+      this.context,
+      workspaceFolder,
+      this.debugConfigurationProvider
+    );
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
   }
 
@@ -93,6 +100,19 @@ export class ExtensionManager {
 
     if (extension) {
       this.extByWorkspace.delete(key);
+    }
+  }
+
+  onDidChangeConfiguration(event: vsCodeTypes.ConfigurationChangeEvent): void {
+    const vscode = this._vscode;
+
+    if (event.affectsConfiguration('nightwatch')) {
+      vscode.workspace.workspaceFolders?.forEach((workspaceFolder) => {
+        const nightwatchExt = this.getByExtName(workspaceFolder.name);
+        if (nightwatchExt && event.affectsConfiguration('nightwatch', workspaceFolder.uri)) {
+          nightwatchExt.triggerUpdateSettings();
+        }
+      });
     }
   }
 
