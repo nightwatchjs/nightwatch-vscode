@@ -1,8 +1,9 @@
 import path from 'path';
 import { nodeBinExtension, pathToNightwatchCommandLine } from '../helpers';
+import { workspaceLogging } from '../Logging';
 import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 import { NightwatchExtensionResourceSettings, NodeEnv } from '../Settings/types';
-import { NightwatchExtContext } from '../types/extensionTypes';
+import { NightwatchExtContext } from './types';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
 export const getExtensionResourceSettings = (
@@ -17,7 +18,7 @@ export const getExtensionResourceSettings = (
     showTerminalOnLaunch: config.get<boolean>('showTerminalOnLaunch'),
     testPath: path.join(uri.fsPath, config.get<string>('testPath')!),
     nodeEnv: config.get<NodeEnv | null>('nodeEnv') ?? undefined,
-    debugMode: config.get<boolean>('debugMode')
+    debugMode: config.get<boolean>('debugMode'),
   };
 };
 
@@ -41,6 +42,7 @@ export const createNightwatchExtContext = (
   return {
     workspace: workspaceFolder,
     createRunnerWorkspace,
+    loggingFactory: workspaceLogging(workspaceFolder.name, settings.debugMode ?? false),
     settings,
   };
 };
@@ -69,3 +71,14 @@ const findNightwatchConfigFile = async (vscode: vsCodeTypes.VSCode): Promise<str
     return configFileUri.path;
   }
 };
+
+/**
+ * ANSI colors/characters cleaning based on http://stackoverflow.com/questions/25245716/remove-all-ansi-colors-styles-from-strings
+ */
+export function cleanAnsi(str: string): string {
+  return str.replace(
+    // eslint-disable-next-line no-control-regex
+    /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+    ''
+  );
+}

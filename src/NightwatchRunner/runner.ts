@@ -1,23 +1,35 @@
 import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
+import { workspaceLogging } from '../Logging';
+import { Logging, LoggingFactory } from '../Logging/types';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
-import { Options } from './types';
+import { Options, RunnerEvent } from './types';
+
+export const runnerEvents: RunnerEvent[] = [
+  'executableOutput',
+  'executableStdErr',
+  'processExit',
+  'processClose',
+  'terminalError',
+];
 
 export default class Runner extends EventEmitter {
+  private logging: Logging;
   childProcess?: ChildProcess;
   workspace: ProjectWorkspace;
   options: Options;
-  _createProcess: (projectWorkspace: ProjectWorkspace, args: string[]) => ChildProcess;
+  _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
   _exited: boolean;
 
-  constructor(workspace: ProjectWorkspace, options?: Options) {
+  constructor(workspace: ProjectWorkspace, logger: LoggingFactory, options?: Options) {
     super();
 
     this._createProcess = createProcess;
     this.workspace = workspace;
     this.options = options || {};
     this._exited = false;
+    this.logging = logger.create('Runner');
   }
 
   getArgs(): string[] {
@@ -34,10 +46,15 @@ export default class Runner extends EventEmitter {
     }
 
     const args = this.getArgs();
-    this.childProcess = createProcess(this.workspace, args);
+    this.childProcess = this._createProcess(this.workspace, args, this.logging);
 
-    this.childProcess.on('data', (data: Buffer) => {
+    // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
+    this.childProcess.stdout!.on('data', (data: Buffer) => {
       this.emit('executableOutput', data.toString());
+    });
+
+    this.childProcess.stderr!.on('data', (data) => {
+      this.emit('executableStdErr', data);
     });
 
     this.childProcess.on('exit', (code: number | null, signal: string | null) => {
@@ -57,8 +74,7 @@ export default class Runner extends EventEmitter {
 
   closeProcess() {
     if (!this.childProcess || this._exited) {
-      // TODO: Replace with common logger
-      console.log(`process has not started or already exited`);
+      this.logging('debug', 'process has not started or already exited');
       return;
     }
 
@@ -71,7 +87,10 @@ export default class Runner extends EventEmitter {
         // as a detached process, it is the same as the PID of the leader process.
         process.kill(-this.childProcess.pid!);
       } catch (error) {
-        console.warn(`failed to kill process group, this may leave some orphan process ${this.childProcess.pid}, error: ${error}`);
+        this.logging(
+          'warn',
+          `failed to kill process group, this may leave some orphan process ${this.childProcess.pid}, error: ${error}`
+        );
         this.childProcess.kill();
       }
     }

@@ -1,12 +1,12 @@
 import * as vsCodeTypes from '../types/vscodeTypes';
 import path = require('path');
 import { debugSessionName } from '../appGlobals';
-import { NightwatchExtContext } from '../types/extensionTypes';
+import { NightwatchExtContext } from './types';
 import { createProcess } from '../NightwatchRunner/process';
 
 /**
  * TODO: List if items need to take care of
- * 
+ *
  * Config discovery
  * Matching workspace with config in directory
  * Add Process queue
@@ -20,9 +20,11 @@ export class NightwatchTest {
     if (vscode.workspace.workspaceFolders) {
       const runnerWorkspace = await extContext.createRunnerWorkspace();
 
-      const childProcess = createProcess(runnerWorkspace, [
-        `${vscode.workspace.workspaceFolders[0].uri.path}/ecosia.js`,
-      ]);
+      const childProcess = createProcess(
+        runnerWorkspace,
+        [`${vscode.workspace.workspaceFolders[0].uri.path}/ecosia.js`],
+        extContext.loggingFactory.create('Runner')
+      );
 
       childProcess.on('data', (data) => {
         console.log(data);

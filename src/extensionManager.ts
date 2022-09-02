@@ -1,9 +1,9 @@
 import * as vsCodeTypes from './types/vscodeTypes';
 
 import { NightwatchExt } from './NightwatchExt';
-import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './types/extensionTypes';
+import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './NightwatchExt/types';
 import { extensionName } from './appGlobals';
-import { NightwatchTest } from './NightwatchExt/nightwatchtest';
+import { NightwatchTest } from './NightwatchExt/nightwatchTest';
 
 const commandPrefix: Record<CommandType, string> = {
   'all-workspaces': `${extensionName}`,

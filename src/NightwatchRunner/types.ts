@@ -10,3 +10,10 @@ export interface ProjectWorkspaceConfig {
 export type Options = {
   env?: string;
 };
+
+export type RunnerEvent =
+  | 'executableOutput'
+  | 'executableStdErr'
+  | 'processExit'
+  | 'processClose'
+  | 'terminalError';
