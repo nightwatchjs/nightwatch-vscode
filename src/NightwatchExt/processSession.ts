@@ -1,10 +1,10 @@
-import { stringifyRequest } from '../NightwatchProcessManagement';
-import { NightwatchProcessManager } from '../NightwatchProcessManagement';
 import {
+  stringifyRequest,
   NightwatchProcessInfo,
   NightwatchProcessRequest,
   NightwatchProcessType,
   ScheduleStrategy,
+  NightwatchProcessManager
 } from '../NightwatchProcessManagement';
 import { RunTestListener } from './processListener';
 import { ListenerSession, NightwatchExtProcessContext, NightwatchExtRequestType, ProcessSession } from './types';
