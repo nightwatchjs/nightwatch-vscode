@@ -1,6 +1,5 @@
 import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
-import { workspaceLogging } from '../Logging';
 import { Logging, LoggingFactory } from '../Logging/types';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';

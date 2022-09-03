@@ -1,17 +1,17 @@
 export type {
+  CancellationToken,
+  ConfigurationChangeEvent,
+  DebugConfiguration,
+  DebugConfigurationProvider,
+  Disposable,
   Event,
   EventEmitter,
   ExtensionContext,
   QuickPick,
   QuickPickItem,
-  Disposable,
+  TextEditor,
   Uri,
   WorkspaceFolder,
-  TextEditor,
-  DebugConfiguration,
-  DebugConfigurationProvider,
-  CancellationToken,
-  ConfigurationChangeEvent,
 } from 'vscode';
 
 export type VSCode = typeof import('vscode');

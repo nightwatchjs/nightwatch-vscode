@@ -26,3 +26,5 @@ export const workspaceLogging = (workspaceName: string, verbose: boolean): Loggi
 
   return { create };
 };
+
+export * from './types';

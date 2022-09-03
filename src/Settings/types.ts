@@ -1,4 +1,4 @@
-import ProjectWorkspace from "../NightwatchRunner/projectWorkspace";
+import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 
 export type NodeEnv = ProjectWorkspace['nodeEnv'];
 export interface NightwatchExtensionResourceSettings {

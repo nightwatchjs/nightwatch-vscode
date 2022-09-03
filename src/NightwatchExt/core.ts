@@ -1,5 +1,11 @@
 import { OutputChannel } from 'vscode';
 import { Logging } from '../Logging/types';
+import { NightwatchExtensionResourceSettings } from '../Settings/types';
+import * as vsCodeTypes from '../types/vscodeTypes';
+import { DebugConfigurationProvider } from './debugConfigurationProvider';
+import { createNightwatchExtContext, getExtensionResourceSettings } from './helper';
+import { installNightwatch } from './installer';
+import { createProcessSession } from './processSession';
 import {
   NightwatchExtContext,
   NightwatchExtSessionContext,
@@ -7,12 +13,6 @@ import {
   NightwatchSessionEvents,
   ProcessSession,
 } from './types';
-import * as vsCodeTypes from '../types/vscodeTypes';
-import { createNightwatchExtContext, getExtensionResourceSettings } from './helper';
-import { installNightwatch } from './installer';
-import { createProcessSession } from './processSession';
-import { DebugConfigurationProvider } from './debugConfigurationProvider';
-import { NightwatchExtensionResourceSettings } from '../Settings/types';
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
@@ -27,7 +27,7 @@ export class NightwatchExt {
     private _vscode: vsCodeTypes.VSCode,
     private vscodeContext: vsCodeTypes.ExtensionContext,
     private workspaceFolder: vsCodeTypes.WorkspaceFolder,
-    private debugConfigurationProvider: DebugConfigurationProvider,
+    private debugConfigurationProvider: DebugConfigurationProvider
   ) {
     vscode = _vscode;
     this.vscodeContext = vscodeContext;

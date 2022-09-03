@@ -1,5 +1,5 @@
-import { Logging } from '../Logging/types';
-import { NightwatchExtContext } from '../NightwatchExt/types';
+import { Logging } from '../Logging';
+import { NightwatchExtContext } from '../NightwatchExt';
 import { isDup, stringifyRequest } from './helpers';
 import { NightwatchProcess } from './nightwatchProcess';
 import { createTaskQueue } from './taskQueue';

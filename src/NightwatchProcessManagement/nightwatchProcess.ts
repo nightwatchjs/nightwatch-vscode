@@ -1,9 +1,9 @@
-import { Logging } from "../Logging/types";
-import Runner, { runnerEvents } from "../NightwatchRunner/runner";
-import { Options, RunnerEvent } from "../NightwatchRunner/types";
-import { NightwatchExtContext } from "../NightwatchExt/types";
-import { stringifyRequest } from "./helpers";
-import { NightwatchProcessInfo, NightwatchProcessRequest, RunnerTask, StopReason } from "./types";
+import { Logging } from '../Logging';
+import { NightwatchExtContext } from '../NightwatchExt';
+import Runner, { runnerEvents } from '../NightwatchRunner/runner';
+import { Options, RunnerEvent } from '../NightwatchRunner';
+import { stringifyRequest } from './helpers';
+import { NightwatchProcessInfo, NightwatchProcessRequest, RunnerTask, StopReason } from './types';
 
 let SEQ = 0;
 
@@ -65,14 +65,13 @@ export class NightwatchProcess implements NightwatchProcessInfo {
 
     this.registerListener(runner);
 
-    
     let taskInfo: Omit<RunnerTask, 'promise'>;
     const promise = new Promise<void>((resolve, reject) => {
-      taskInfo = {runner, resolve,reject};
+      taskInfo = { runner, resolve, reject };
     });
-    
+
     this.task = { ...taskInfo!, promise };
-    
+
     this.request.listener.onEvent(this, 'processStarting');
     runner.start();
 

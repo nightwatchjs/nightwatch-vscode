@@ -1,9 +1,9 @@
-import { Logging } from '../Logging/types';
-import { ListenerSession, ListTestFilesCallback, NightwatchRunEvent } from './types';
+import { Logging } from '../Logging';
+import { NightwatchProcess } from '../NightwatchProcessManagement';
+import { NightwatchProcessEvent } from '../nightwatchProcessManagement';
 import * as vsCodeTypes from '../types/vscodeTypes';
-import { NightwatchProcess } from '../nightwatchProcessManagement/nightwatchProcess';
-import { NightwatchProcessEvent } from '../nightwatchProcessManagement/types';
 import { cleanAnsi } from './helper';
+import { ListenerSession, ListTestFilesCallback, NightwatchRunEvent } from './types';
 
 export class AbstractProcessListener {
   protected session: ListenerSession;

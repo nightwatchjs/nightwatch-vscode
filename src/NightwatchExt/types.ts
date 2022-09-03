@@ -1,6 +1,6 @@
 // import * as vsCodeTypes from '../types/vscodeTypes';
-import * as vsCodeTypes from '../types/vscodeTypes';
 import { NightwatchProcessInfo, NightwatchProcessRequestSimple } from '../NightwatchProcessManagement/types';
+import * as vsCodeTypes from '../types/vscodeTypes';
 
 // export interface NightwatchSessionEvents {
 //   onRunEvent: vsCodeTypes.EventEmitter<NightwatchRunEvent>;
@@ -8,10 +8,10 @@ import { NightwatchProcessInfo, NightwatchProcessRequestSimple } from '../Nightw
 //   onTestSessionStopped: vsCodeTypes.EventEmitter<void>;
 // }
 
-import { NightwatchExt } from '../NightwatchExt';
-import { NightwatchExtensionResourceSettings } from '../Settings/types';
-import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 import { LoggingFactory } from '../Logging/types';
+import { NightwatchExt } from '../NightwatchExt';
+import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
+import { NightwatchExtensionResourceSettings } from '../Settings/types';
 
 export type GetNightwatchExtByURI = (uri: vsCodeTypes.Uri) => NightwatchExt | undefined;
 

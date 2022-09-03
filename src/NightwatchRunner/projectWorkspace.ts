@@ -66,8 +66,8 @@ export default class ProjectWorkspace {
 
 /**
  * A factory method to create ProjectWorkspace instance using ProjectWorkspaceConfig object.
- * 
- * @param config 
+ *
+ * @param config
  * @returns {ProjectWorkspace}
  */
 export const createProjectWorkspace = (config: ProjectWorkspaceConfig): ProjectWorkspace => {

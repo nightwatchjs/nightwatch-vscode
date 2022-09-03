@@ -1,5 +1,5 @@
-import { NightwatchProcess } from "./nightwatchProcess";
-import { NightwatchProcessRequest, Task, TaskPredicate } from "./types";
+import { NightwatchProcess } from './nightwatchProcess';
+import { NightwatchProcessRequest, Task, TaskPredicate } from './types';
 
 export const stringifyRequest = (request: NightwatchProcessRequest): string => {
   const replacer = (key: string, value: unknown) => {
@@ -35,11 +35,13 @@ export const isRequestEqual = (request1: NightwatchProcessRequest, request2: Nig
     case 'by-file':
       return request1.type === request2.type && request1.testFileName === request2.testFileName;
     case 'by-file-test':
-      return (request1.type === request2.type &&
+      return (
+        request1.type === request2.type &&
         request1.testFileName === request2.testFileName &&
-        request1.testName === request2.testName);
+        request1.testName === request2.testName
+      );
     case 'not-test':
-      return (request1.type === request2.type);
+      return request1.type === request2.type;
     default:
       return request1.type === request2.type;
   }

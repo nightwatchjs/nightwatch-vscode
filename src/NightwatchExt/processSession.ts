@@ -1,14 +1,13 @@
-import { stringifyRequest } from '../NightwatchProcessManagement/helpers';
-import { NightwatchProcessManager } from '../NightwatchProcessManagement/nightwatchProcessManager';
+import { stringifyRequest } from '../NightwatchProcessManagement';
+import { NightwatchProcessManager } from '../NightwatchProcessManagement';
 import {
   NightwatchProcessInfo,
   NightwatchProcessRequest,
   NightwatchProcessType,
   ScheduleStrategy,
-} from '../NightwatchProcessManagement/types';
+} from '../NightwatchProcessManagement';
 import { RunTestListener } from './processListener';
-import { ListenerSession, NightwatchExtContext, NightwatchExtProcessContext } from './types';
-import { NightwatchExtRequestType, ProcessSession } from './types';
+import { ListenerSession, NightwatchExtProcessContext, NightwatchExtRequestType, ProcessSession } from './types';
 
 const ProcessScheduleStrategy: Record<NightwatchProcessType, ScheduleStrategy> = {
   'all-tests': {
@@ -111,7 +110,6 @@ export const createProcessSession = (context: NightwatchExtProcessContext): Proc
   const stop = async (): Promise<void> => {
     return nightwatchProcessManager.stopAll();
   };
-
 
   return {
     start,

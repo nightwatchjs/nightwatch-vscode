@@ -2,9 +2,9 @@ import path from 'path';
 import { nodeBinExtension, pathToNightwatchCommandLine } from '../helpers';
 import { workspaceLogging } from '../Logging';
 import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
-import { NightwatchExtensionResourceSettings, NodeEnv } from '../Settings/types';
-import { NightwatchExtContext } from './types';
+import { NightwatchExtensionResourceSettings, NodeEnv } from '../Settings';
 import * as vsCodeTypes from '../types/vscodeTypes';
+import { NightwatchExtContext } from './types';
 
 export const getExtensionResourceSettings = (
   vscode: vsCodeTypes.VSCode,
