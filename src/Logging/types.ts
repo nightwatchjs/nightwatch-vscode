@@ -1,0 +1,53 @@
+export type LoggingType = 'debug' | 'warn' | 'error';
+export type Logging = (type: LoggingType, ...args: unknown[]) => void;
+
+export interface LoggingFactory {
+  create: (id: string) => Logging;
+}
+
+export type UtilInspectColors =
+  | 'reset'
+  | 'bold'
+  | 'dim'
+  | 'italic'
+  | 'underline'
+  | 'blink'
+  | 'inverse'
+  | 'hidden'
+  | 'strikethrough'
+  | 'doubleunderline'
+  | 'black'
+  | 'red'
+  | 'green'
+  | 'yellow'
+  | 'blue'
+  | 'magenta'
+  | 'cyan'
+  | 'white'
+  | 'bgBlack'
+  | 'bgRed'
+  | 'bgGreen'
+  | 'bgYellow'
+  | 'bgBlue'
+  | 'bgMagenta'
+  | 'bgCyan'
+  | 'bgWhite'
+  | 'framed'
+  | 'overlined'
+  | 'gray'
+  | 'grey'
+  | 'redBright'
+  | 'greenBright'
+  | 'yellowBright'
+  | 'blueBright'
+  | 'magentaBright'
+  | 'cyanBright'
+  | 'whiteBright'
+  | 'bgGray'
+  | 'bgRedBright'
+  | 'bgGreenBright'
+  | 'bgYellowBright'
+  | 'bgBlueBright'
+  | 'bgMagentaBright'
+  | 'bgCyanBright'
+  | 'bgWhiteBright';

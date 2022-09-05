@@ -1,4 +1,4 @@
-import * as vsCodeTypes from './types/vscodeTypes';
+import * as vsCodeTypes from '../types/vscodeTypes';
 
 export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<void> {
   const [workspaceFolder] = vscode.workspace.workspaceFolders || [];
@@ -36,18 +36,18 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
   const result = await vscode.window.showQuickPick(quickPickItems, {
     title: 'Install Nightwatch',
     canPickMany: true,
-    matchOnDetail: true
+    matchOnDetail: true,
   });
-  
+
   if (result?.length === 0) {
-    vscode.window.showErrorMessage('You haven\'t selected any browsers');
+    vscode.window.showErrorMessage("You haven't selected any browsers");
     return;
   }
 
   const terminal = vscode.window.createTerminal({
     name: 'Install Nightwatch',
     cwd: workspaceFolder.uri.fsPath,
-    env: process.env
+    env: process.env,
   });
 
   terminal.show();

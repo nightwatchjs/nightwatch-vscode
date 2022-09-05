@@ -1,35 +1,59 @@
-import { installNightwatch } from "./installer";
-import * as vsCodeTypes from "./types/vscodeTypes";
-import "./setupNLS";
+import * as vsCodeTypes from './types/vscodeTypes';
+import './setupNLS';
+import { ExtensionManager } from './extensionManager';
+import { NightwatchExt } from './NightwatchExt';
+import * as vscode from 'vscode';
+
+let extensionManager: ExtensionManager;
+
+const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
+  const installNightwatch = (extension: NightwatchExt) => {
+    extension.installNightwatch();
+  };
+
+  const runAllTests = (extension: NightwatchExt) => {
+    extension.runTests();
+  };
+
+  const debugAllTests = (extension: NightwatchExt) => {
+    extension.debugTests();
+  };
+
+  context.subscriptions.push(
+    extensionManager.registerCommand({
+      type: 'all-workspaces',
+      name: 'install-nightwatch',
+      callback: installNightwatch,
+    }),
+    extensionManager.registerCommand({
+      type: 'active-text-editor',
+      name: 'run-test',
+      callback: runAllTests,
+    }),
+    extensionManager.registerCommand({
+      type: 'active-text-editor',
+      name: 'debug-test',
+      callback: debugAllTests,
+    }),
+    vscode.workspace.onDidChangeConfiguration(
+      extensionManager.onDidChangeConfiguration,
+      extensionManager
+    )
+  );
+};
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vsCodeTypes.ExtensionContext): Promise<void> {
-  new Extension(require('vscode')).activate(context);
+  // TODO: Remove console.log before MVP release
+  console.log('extension "nightwatch-vscode" is now active!');
+  // TODO: Activate only if nightwatch is present in Package.json
+  extensionManager = new ExtensionManager(vscode, context);
+  addSubscriptions(context);
+  extensionManager.activate();
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
-
-export class Extension {
-  private _vscode: vsCodeTypes.VSCode;
-  
-  constructor(vscode: vsCodeTypes.VSCode) {
-    this._vscode = vscode;
-  }
-
-  public async activate(context: vsCodeTypes.ExtensionContext): Promise<void> {
-    // TODO: Remove console.log before MVP release
-    console.log('extension "nightwatch-vscode" is now active!');
-
-    const vscode = this._vscode;
-
-    const disposable = [
-      vscode.commands.registerCommand('nightwatch.installNightwatch', () => {
-       installNightwatch(this._vscode);
-      }),
-    ];
-
-    context.subscriptions.push(...disposable);
-  }
+export function deactivate() {
+  extensionManager.deactivate();
 }
