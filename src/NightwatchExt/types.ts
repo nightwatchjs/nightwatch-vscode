@@ -2,12 +2,6 @@
 import { NightwatchProcessInfo, NightwatchProcessRequestSimple } from '../NightwatchProcessManagement/types';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
-// export interface NightwatchSessionEvents {
-//   onRunEvent: vsCodeTypes.EventEmitter<NightwatchRunEvent>;
-//   onTestSessionStarted: vsCodeTypes.EventEmitter<NightwatchExtSessionContext>;
-//   onTestSessionStopped: vsCodeTypes.EventEmitter<void>;
-// }
-
 import { LoggingFactory } from '../Logging/types';
 import { NightwatchExt } from '../NightwatchExt';
 import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';

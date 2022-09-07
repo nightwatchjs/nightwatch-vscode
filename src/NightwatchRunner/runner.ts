@@ -32,6 +32,10 @@ export default class Runner extends EventEmitter {
   }
 
   getArgs(): string[] {
+    if (this.options.args && this.options.args.replace) {
+      return this.options.args.args;
+    }
+
     const args = [];
     if (this.options.env) {
       args.push(`-e`, this.options.env);

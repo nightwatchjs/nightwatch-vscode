@@ -7,8 +7,14 @@ export interface ProjectWorkspaceConfig {
   shell: string;
 }
 
+export interface RunArgs {
+  args: string[];
+  replace?: boolean; // default is false
+}
+
 export type Options = {
   env?: string;
+  args?: RunArgs
 };
 
 export type RunnerEvent = 'executableOutput' | 'executableStdErr' | 'processExit' | 'processClose' | 'terminalError';

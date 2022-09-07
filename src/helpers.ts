@@ -1,6 +1,8 @@
+import { NightwatchExtContext } from './NightwatchExt/types';
 import { existsSync } from 'fs';
 import { platform } from 'os';
 import { join, normalize } from 'path';
+import * as vsCodeTypes from './types/vscodeTypes';
 import which from 'which';
 
 /**
@@ -24,3 +26,10 @@ export async function pathToNightwatchCommandLine(testPath: string): Promise<str
 pathToNightwatchCommandLine('/Users/vaibhavsingh/Dev/nightwatch-vscode/sandbox').then((res) => {
   console.log(res);
 });
+
+export const prefixWorkspace = (vscode: vsCodeTypes.VSCode, context: NightwatchExtContext, message: string): string => {
+  if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
+    return `(${context.workspace.name}) ${message}`;
+  }
+  return message;
+};

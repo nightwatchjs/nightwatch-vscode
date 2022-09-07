@@ -1,3 +1,5 @@
+import JSON5 from 'json5';
+import * as vscode from 'vscode';
 import { Logging } from '../Logging';
 import { NightwatchProcess } from '../NightwatchProcessManagement';
 import { NightwatchProcessEvent } from '../nightwatchProcessManagement';
@@ -75,12 +77,9 @@ export class AbstractProcessListener {
     // code = 1 is general error, usually mean the command emit error, which should already handled by other event processing, for example when Nightwatch has failed tests.
     // However, error beyond 1, usually means some error outside of the command it is trying to execute, so reporting here for debugging purpose
     // see shell error code: https://www.linuxjournal.com/article/10844
-    if (code && code > 1) {
+    if (this.isProcessError(code)) {
       const error = `${process.request.type} onProcessExit: process exit with code=${code}, signal=${signal}`;
-      this.session.context.onRunEvent.fire({ type: 'exit', process, error });
-      this.logging('debug', `${error} :`, process.toString());
-    } else {
-      this.session.context.onRunEvent.fire({ type: 'exit', process });
+      this.logging('warn', `${error} :`, process.toString());
     }
   }
 
@@ -95,6 +94,13 @@ export class AbstractProcessListener {
 
   protected onTerminalError(process: NightwatchProcess, data: string, _raw: string): void {
     this.logging('error', `${process.request.type} onTerminalError:`, data);
+  }
+
+  protected isProcessError(code?: number): boolean {
+    // code = 1 is general error, usually mean the command emit error, which should already handled by other event processing, for example when jest has failed tests.
+    // However, error beyond 1, usually means some error outside of the command it is trying to execute, so reporting here for debugging purpose
+    // see shell error code: https://www.linuxjournal.com/article/10844
+    return code != null && code > 1;
   }
 }
 
@@ -138,6 +144,7 @@ export class ListTestFileListener extends AbstractProcessListener {
   }
 
   private buffer = '';
+  private error: string | undefined;
   private onResult: ListTestFilesCallback;
 
   constructor(session: ListenerSession, onResult: ListTestFilesCallback) {
@@ -151,6 +158,37 @@ export class ListTestFileListener extends AbstractProcessListener {
 
   protected onProcessClose(process: NightwatchProcess): void {
     super.onProcessClose(process);
-    // TODO: implement onProcessClose for List files
+
+    if (this.error) {
+      return this.onResult(undefined, this.error);
+    }
+
+    try {
+      // TODO: Handle empty string
+      const testFileList: string[] = JSON5.parse(this.buffer.toString());
+      if (!testFileList || testFileList.length === 0) {
+        // no test file is probably all right
+        this.logging('debug', 'no test file is found');
+        return this.onResult([]);
+      }
+      const uriFiles = testFileList.reduce((totalFiles, file) => {
+        // convert to uri style filePath to match vscode document names
+        return totalFiles.concat(vscode.Uri.file(file).fsPath);
+      }, [] as string[]);
+
+      this.logging('debug', `got ${uriFiles.length} test files`);
+      return this.onResult(uriFiles);
+    } catch (e) {
+      this.logging('warn', 'failed to parse result:', this.buffer, 'error=', e);
+      this.onResult(undefined, e);
+    }
+  }
+
+  protected onProcessExit(process: NightwatchProcess, code?: number, signal?: string): void {
+    // Note: will not fire 'exit' event, as the output is reported via the onResult() callback
+    super.onProcessExit(process, code, signal);
+    if (super.isProcessError(code)) {
+      this.error = `${process.request.type} onProcessExit: process exit with code=${code}, signal=${signal}`;
+    }
   }
 }

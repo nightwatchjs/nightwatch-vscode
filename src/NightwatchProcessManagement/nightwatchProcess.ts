@@ -50,15 +50,12 @@ export class NightwatchProcess implements NightwatchProcessInfo {
 
     const options: Options = {
       env: 'chrome',
+      args: { args: [] },
     };
 
-    // switch (this.request.type) {
-    //   case 'all-tests':
-
-    //     break;
-    //   default:
-    //     break;
-    // }
+    if (this.request.type === 'not-test') {
+      options.args = { args: this.request.args, replace: true };
+    }
 
     const runnerWorkspace = await this.extContext.createRunnerWorkspace();
     const runner = new Runner(runnerWorkspace, this.extContext.loggingFactory, options);

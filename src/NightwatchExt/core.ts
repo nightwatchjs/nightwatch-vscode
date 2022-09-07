@@ -1,7 +1,9 @@
 import { OutputChannel } from 'vscode';
 import { Logging } from '../Logging/types';
+import * as messaging from '../messaging';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
 import * as vsCodeTypes from '../types/vscodeTypes';
+import { prefixWorkspace } from './../helpers';
 import { DebugConfigurationProvider } from './debugConfigurationProvider';
 import { createNightwatchExtContext, getExtensionResourceSettings } from './helper';
 import { installNightwatch } from './installer';
@@ -43,6 +45,8 @@ export class NightwatchExt {
     this.setupRunEvents(this.events);
     this.processSession = this.createProcessSession();
     this.debugConfigurationProvider = debugConfigurationProvider;
+
+    this.updateTestFileList();
   }
 
   public async installNightwatch() {
@@ -119,6 +123,32 @@ export class NightwatchExt {
 
     this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings);
     this.processSession = this.createProcessSession();
+    this.updateTestFileList();
+  }
+
+  private updateTestFileList(): void {
+    this.processSession.scheduleProcess({
+      type: 'list-test-files',
+      onResult: (files, error) => {
+        if (error) {
+          const msg = prefixWorkspace(
+            vscode,
+            this.extContext,
+            'Failed to obtain test file list, something went wrong 🫣'
+          );
+          this.logging('error', msg, error);
+          //fire this warning message could risk reporting error multiple times for the given workspace folder
+          //therefore garding the warning message with the debugMode
+          if (this.extContext.settings.debugMode) {
+            messaging.systemWarningMessage(vscode, msg);
+          }
+        }
+
+        this.setTestFiles(files);
+        this.logging('debug', `found ${files?.length} testFiles`);
+      },
+    });
+  }
   }
 
   async runTests(): Promise<void> {

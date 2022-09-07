@@ -28,7 +28,7 @@ export const createNightwatchExtContext = (
   settings: NightwatchExtensionResourceSettings
 ): NightwatchExtContext => {
   const createRunnerWorkspace = async () => {
-    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(vscode, settings);
+    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(vscode, settings, workspaceFolder);
     return new ProjectWorkspace(
       settings.testPath ?? '',
       pathToConfig,
@@ -49,7 +49,8 @@ export const createNightwatchExtContext = (
 
 const getNightwatchCommandAndConfig = async (
   vscode: vsCodeTypes.VSCode,
-  settings: NightwatchExtensionResourceSettings
+  settings: NightwatchExtensionResourceSettings,
+  workspaceFolder: vsCodeTypes.WorkspaceFolder
 ): Promise<string[]> => {
   const nightwatchConfigFile = await findNightwatchConfigFile(vscode);
 
@@ -59,8 +60,9 @@ const getNightwatchCommandAndConfig = async (
     }
     return [settings.nightwatchCommandLine, ''];
   }
+
   const possibleNightwatchCommandLine =
-    (await pathToNightwatchCommandLine(settings.testPath)) || 'nightwatch' + nodeBinExtension;
+    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) || 'nightwatch' + nodeBinExtension;
   return [possibleNightwatchCommandLine, nightwatchConfigFile ?? ''];
 };
 

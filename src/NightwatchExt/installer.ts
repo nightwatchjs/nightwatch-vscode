@@ -1,3 +1,4 @@
+import { systemErrorMessage } from '../messaging';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
 export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<void> {
@@ -40,7 +41,7 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
   });
 
   if (result?.length === 0) {
-    vscode.window.showErrorMessage("You haven't selected any browsers");
+    systemErrorMessage(vscode, "You haven't selected any browsers");
     return;
   }
 
