@@ -54,11 +54,18 @@ export class NightwatchProcess implements NightwatchProcessInfo {
       args: { args: [] },
     };
 
-    if (this.request.type === 'not-test') {
-      options.args = { args: this.request.args, replace: true };
-    }
-    if (this.request.type === 'by-file-test') {
-      options.args = { args: ["--testcase" , this.request.testName,  "--test" , this.request.testFileName], replace: true };
+    switch (this.request.type) {
+      case 'not-test':
+        options.args = { args: this.request.args, replace: true };
+        break;
+      case 'by-file-test':
+        options.args = { args: ["--testcase", this.request.testName, "--test", this.request.testFileName], replace: true };
+        break;
+      case 'by-file':
+        options.args = { args: [this.request.testFileName], replace: true };
+      default:
+        this.logging('error', `could not find valid request type ${this.request.type}`);
+        break;
     }
 
     const runnerWorkspace = await this.extContext.createRunnerWorkspace();

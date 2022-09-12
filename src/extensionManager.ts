@@ -132,6 +132,7 @@ export class ExtensionManager {
       ext.onDidCloseTextDocument(document);
     }
   }
+
   onDidChangeActiveTextEditor(editor?: vsCodeTypes.TextEditor): void {
     if (editor && editor.document) {
       const ext = this.getByDocumentUri(editor.document.uri);
@@ -140,6 +141,7 @@ export class ExtensionManager {
       }
     }
   }
+
   onDidChangeTextDocument(event: vsCodeTypes.TextDocumentChangeEvent): void {
     const ext = this.getByDocumentUri(event.document.uri);
     if (ext) {
@@ -153,12 +155,14 @@ export class ExtensionManager {
       ext.onWillSaveTextDocument(event);
     }
   }
+
   onDidSaveTextDocument(document: vsCodeTypes.TextDocument): void {
     const ext = this.getByDocumentUri(document.uri);
     if (ext) {
       ext.onDidSaveTextDocument(document);
     }
   }
+
   private onFilesChange(files: readonly vsCodeTypes.Uri[], handler: (ext: NightwatchExt) => void) {
     const exts = files.map((f) => this.getByDocumentUri(f)).filter((ext) => ext != null) as NightwatchExt[];
     const set = new Set<NightwatchExt>(exts);

@@ -353,9 +353,11 @@ export class NightwatchExt {
   onDidCreateFiles(_event: vsCodeTypes.FileCreateEvent): void {
     this.updateTestFileList();
   }
+
   onDidRenameFiles(_event: vsCodeTypes.FileRenameEvent): void {
     this.updateTestFileList();
   }
+
   onDidDeleteFiles(_event: vsCodeTypes.FileDeleteEvent): void {
     this.updateTestFileList();
   }

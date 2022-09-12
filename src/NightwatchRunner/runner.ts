@@ -68,12 +68,12 @@ export default class Runner extends EventEmitter {
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
     this.childProcess.stdout!.on('data', (data: Buffer) => {
-      this._parseOutput(data, false, this.logging);
+      // this._parseOutput(data, false, this.logging);
       this.emit('executableOutput', data.toString());
     });
 
     this.childProcess.stderr!.on('data', (data) => {
-      // this._parseOutput(data, false, this.logging)
+      // this._parseOutput(data, true, this.logging)
       this.emit('executableStdErr', data);
     });
 
