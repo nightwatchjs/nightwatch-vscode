@@ -31,7 +31,8 @@
 		"workspaceContains:nightwatch.conf.js",
 		"onCommand:com.nightwatch.nightwatchExt.install-nightwatch",
 		"onCommand:com.nightwatch.nightwatchExt.run-test",
-		"onCommand:com.nightwatch.nightwatchExt.debug-test"
+		"onCommand:com.nightwatch.nightwatchExt.debug-test",
+		"onCommand:com.nightwatch.nightwatchExt.run-all-test"
 	],
 	"main": "./dist/extension.js",
 	"browser": "./dist/extension.js",
@@ -45,6 +46,11 @@
 				},
 				{
 					"command": "com.nightwatch.nightwatchExt.run-test",
+					"group": "Nightwatch",
+					"when": "!virtualWorkspace && shellExecutionSupported"
+				},
+				{
+					"command": "com.nightwatch.nightwatchExt.run-all-test",
 					"group": "Nightwatch",
 					"when": "!virtualWorkspace && shellExecutionSupported"
 				},
@@ -65,6 +71,11 @@
 				"category": "Nightwatch",
 				"command": "com.nightwatch.nightwatchExt.run-test",
 				"title": "%nightwatch.command.nightwatch.runTest.title%"
+			},
+			{
+				"category": "Nightwatch",
+				"command": "com.nightwatch.nightwatchExt.run-all-test",
+				"title": "%nightwatch.command.nightwatch.runAllTest.title%"
 			},
 			{
 				"category": "Nightwatch",
@@ -120,7 +131,7 @@
 		},
 		"debuggers": [
 			{
-				"type": "vscode-nightwtach-tests",
+				"type": "vscode-nightwatch-tests",
 				"label": "Debug Nightwatch tests using vscode-nightwatch",
 				"languages": [
 					"javascript",
@@ -136,7 +147,8 @@
 						"program": "${workspaceFolder}/node_modules/.bin/nightwatch",
 						"args": [
 							"--config",
-							"nightwatch.conf.js"
+							"nightwatch.conf.js",
+							"${relativeFile}"
 						],
 						"cwd": "${workspaceFolder}",
 						"skipFiles": [
