@@ -7,6 +7,9 @@ export type {
   Event,
   EventEmitter,
   ExtensionContext,
+  FileCreateEvent,
+  FileDeleteEvent,
+  FileRenameEvent,
   QuickPick,
   QuickPickItem,
   TestController,
@@ -15,9 +18,12 @@ export type {
   TestRunProfile,
   TestRunRequest,
   TextDocument,
+  TextDocumentChangeEvent,
+  TextDocumentWillSaveEvent,
   TextEditor,
   Uri,
   WorkspaceFolder,
+  WorkspaceFoldersChangeEvent,
 } from 'vscode';
 
 export type VSCode = typeof import('vscode');

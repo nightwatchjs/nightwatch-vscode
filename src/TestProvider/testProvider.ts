@@ -27,7 +27,6 @@ export class NightwatchTestProvider {
       this.createProfiles(this.controller)
     );
     this.workspaceRoot = new WorkspaceRoot(this.context);
-    console.log(this.workspaceRoot);
   }
 
   private createController = (wsFolder: vsCodeTypes.WorkspaceFolder): vsCodeTypes.TestController => {
@@ -61,6 +60,7 @@ export class NightwatchTestProvider {
       if (data && data.discoverTest) {
         this.context.appendOutput(`resolving children for ${theItem.id}`, run, true);
         data.discoverTest(run);
+        this.context.ext.testResolveProvider.parseTestFiles();
       } else {
         this.context.appendOutput(`no data found for item ${theItem.id}`, run, true, 'red');
       }

@@ -2,6 +2,15 @@ import { ChildProcess, spawn } from 'child_process';
 import { Logging } from '../Logging/types';
 import ProjectWorkspace from './projectWorkspace';
 
+function stringifyArgs(args: string[]): string[] {
+  return args.map((arg) => {
+    if (!arg.includes("--")) {
+      return JSON.stringify(arg);
+    }
+    return arg;
+  });  
+}
+
 /**
  * Spawns and returns Nightwatch process with specified args
  *
@@ -13,12 +22,11 @@ export const createProcess = (projectWorkspace: ProjectWorkspace, args: string[]
   const runtimeExecutable = projectWorkspace.nightwatchCommandLine;
 
   if (projectWorkspace.pathToConfig) {
-    // args.push('--config');
     args.unshift('--config', projectWorkspace.pathToConfig);
   }
 
   const env = { ...process.env, ...(projectWorkspace.nodeEnv ?? {}) };
-  const command = [runtimeExecutable, args.join(' ')].join(' ');
+  const command = [runtimeExecutable, stringifyArgs(args).join(' ')].join(' ');
 
   const spawnOptions = {
     cwd: projectWorkspace.testPath,

@@ -117,7 +117,38 @@
 					"scope": "resource"
 				}
 			}
-		}
+		},
+		"debuggers": [
+			{
+				"type": "vscode-nightwtach-tests",
+				"label": "Debug Nightwatch tests using vscode-nightwatch",
+				"languages": [
+					"javascript",
+					"javascriptreact",
+					"typescript",
+					"typescriptreact"
+				],
+				"initialConfigurations": [
+					{
+						"type": "node",
+						"name": "Nightwatch Tests",
+						"request": "launch",
+						"program": "${workspaceFolder}/node_modules/.bin/nightwatch",
+						"args": [
+							"--config",
+							"nightwatch.conf.js"
+						],
+						"cwd": "${workspaceFolder}",
+						"skipFiles": [
+							"<node_internals>/**"
+						],
+						"windows": {
+							"program": "${workspaceFolder}/node_modules/nightwatch/bin/nightwatch"
+						}
+					}
+				]
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",

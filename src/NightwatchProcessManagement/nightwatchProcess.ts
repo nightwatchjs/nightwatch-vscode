@@ -57,6 +57,9 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     if (this.request.type === 'not-test') {
       options.args = { args: this.request.args, replace: true };
     }
+    if (this.request.type === 'by-file-test') {
+      options.args = { args: ["--testcase" , this.request.testName,  "--test" , this.request.testFileName], replace: true };
+    }
 
     const runnerWorkspace = await this.extContext.createRunnerWorkspace();
     const runner = new Runner(runnerWorkspace, this.extContext.loggingFactory, options);

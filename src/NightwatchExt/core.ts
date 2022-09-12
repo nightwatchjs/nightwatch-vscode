@@ -1,3 +1,4 @@
+import { DebugTestIdentifier } from './../TestProvider/types';
 import { OutputChannel } from 'vscode';
 import { Logging } from '../Logging/types';
 import * as messaging from '../messaging';
@@ -17,8 +18,9 @@ import {
   NightwatchExtSessionContext,
   NightwatchRunEvent,
   NightwatchSessionEvents,
-  ProcessSession
+  ProcessSession,
 } from './types';
+import { supportedLanguageIds } from '../appGlobals';
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
@@ -43,6 +45,7 @@ export class NightwatchExt {
     this.vscodeContext = vscodeContext;
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
     this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);
+    this.debugConfigurationProvider = debugConfigurationProvider;
     this.logging = this.extContext.loggingFactory.create('NightwatchExt');
     this.outputChannel = vscode.window.createOutputChannel(`Nightwatch (${workspaceFolder.name})`);
     this.events = {
@@ -52,9 +55,6 @@ export class NightwatchExt {
     };
     this.setupRunEvents(this.events);
     this.processSession = this.createProcessSession();
-
-    this.debugConfigurationProvider = debugConfigurationProvider;
-
     this.testResultProvider = new TestResultProvider(
       vscode,
       this.events,
@@ -113,16 +113,37 @@ export class NightwatchExt {
     this.triggerUpdateActiveEditor(editor);
   }
 
-  public runAllTests(): void {
-    if (this.processSession.scheduleProcess({ type: 'all-tests' })) {
-      this.dirtyFiles.clear();
-      return;
+  public runAllTests(editor?: vsCodeTypes.TextEditor): void {
+    if (!editor) {
+      if (this.processSession.scheduleProcess({ type: 'all-tests' })) {
+        this.dirtyFiles.clear();
+        return;
+      }
+    } else {
+      const name = editor.document.fileName;
+      let pInfo;
+      if (this.testResultProvider.isTestFile(name) === 'yes') {
+        // run related tests from source file
+        pInfo = this.processSession.scheduleProcess({
+          type: 'by-file',
+          testFileName: name,
+        });
+      } else {
+        // note: use file-pattern instead of file-path to increase compatibility, such as for angular users.
+        // However, we should keep an eye on performance, as matching by pattern could be slower than by explicit path.
+        // If performance ever become an issue, we could consider optimization...
+        pInfo = this.processSession.scheduleProcess({
+          type: 'by-file-test',
+          testFileName: name,
+          testName: name,
+        });
+      }
+      if (pInfo) {
+        this.dirtyFiles.delete(name);
+        return;
+      }
     }
-  }
-
-  public debugAllTests(): void {
-    const debugConfig = this.debugConfigurationProvider.provideDebugConfigurations(this.extContext.workspace).pop()!;
-    vscode.debug.startDebugging(this.extContext.workspace, debugConfig);
+    this.logging('error', 'failed to schedule the run for', editor?.document.fileName);
   }
 
   private createProcessSession(): ProcessSession {
@@ -193,7 +214,7 @@ export class NightwatchExt {
     });
   }
 
-  public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): void {
+  public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
     const updatedSettings = newSettings ?? getExtensionResourceSettings(vscode, this.extContext.workspace.uri);
 
     this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings);
@@ -202,15 +223,26 @@ export class NightwatchExt {
     return this.startSession();
   }
 
-  public startSession() {
+  public async startSession() {
+    this.dirtyFiles.clear();
+    await this.processSession.stop();
+    this.processSession = this.createProcessSession();
     this.testProvider?.dispose();
     this.testProvider = new NightwatchTestProvider(vscode, this.getExtExplorerContext());
   }
 
+  private isSupportedDocument(document: vsCodeTypes.TextDocument | undefined): boolean {
+    if (!document) {
+      return false;
+    }
+
+    return supportedLanguageIds.includes(document.languageId);
+  }
+
   private isTestFileEditor(editor: vsCodeTypes.TextEditor): boolean {
-    // if (!this.isSupportedDocument(editor.document)) {
-    //   return false;
-    // }
+    if (!this.isSupportedDocument(editor.document)) {
+      return false;
+    }
 
     if (this.testResultProvider.isTestFile(editor.document.fileName) === 'no') {
       return false;
@@ -266,7 +298,7 @@ export class NightwatchExt {
           }
         }
 
-        // this.setTestFiles(files);
+        this.setTestFiles(files);
         this.logging('debug', `found ${files?.length} testFiles`);
       },
     });
@@ -286,11 +318,107 @@ export class NightwatchExt {
     };
   }
 
-  async runTests(): Promise<void> {
-    await this.runAllTests();
+  public debugTests = async (
+    document: vsCodeTypes.TextDocument | string,
+    ...ids: DebugTestIdentifier[]
+  ): Promise<void> => {
+    const idString = (id: DebugTestIdentifier): string => {
+      return typeof id === 'string' ? id : id.title;
+    };
+
+    let testId: DebugTestIdentifier | undefined;
+    switch (ids.length) {
+      case 0:
+        //no testId, will run all tests in the file
+        break;
+      case 1:
+        testId = ids[0];
+        break;
+      default:
+        this.logging('debug', `failed to parse debug test ID: ${ids}`);
+        break;
+    }
+
+    this.debugConfigurationProvider.prepareTestRun(
+      typeof document === 'string' ? document : document.fileName,
+      testId ? idString(testId) : ''
+    );
+
+    const debugConfig = this.debugConfigurationProvider.provideDebugConfigurations(this.extContext.workspace).pop()!;
+    vscode.debug.startDebugging(this.extContext.workspace, debugConfig);
+  };
+
+  //**  window events handling */
+
+  onDidCreateFiles(_event: vsCodeTypes.FileCreateEvent): void {
+    this.updateTestFileList();
+  }
+  onDidRenameFiles(_event: vsCodeTypes.FileRenameEvent): void {
+    this.updateTestFileList();
+  }
+  onDidDeleteFiles(_event: vsCodeTypes.FileDeleteEvent): void {
+    this.updateTestFileList();
   }
 
-  async debugTests(): Promise<void> {
-    await this.debugAllTests();
+  onDidCloseTextDocument(document: vsCodeTypes.TextDocument): void {
+    this.removeCachedTestResults(document);
+  }
+
+  removeCachedTestResults(document: vsCodeTypes.TextDocument, invalidateResult = false): void {
+    if (!document || document.isUntitled) {
+      return;
+    }
+
+    const filePath = document.fileName;
+    if (invalidateResult) {
+      this.testResultProvider.invalidateTestResults(filePath);
+    } else {
+      this.testResultProvider.removeCachedResults(filePath);
+    }
+  }
+
+  /**
+   * This event is fired with the document not dirty when:
+   * - before the onDidSaveTextDocument event
+   * - the document was changed by an external editor
+   */
+  onDidChangeTextDocument(event: vsCodeTypes.TextDocumentChangeEvent): void {
+    if (event.document.isDirty) {
+      return;
+    }
+    if (event.document.uri.scheme === 'git') {
+      return;
+    }
+
+    // Ignore a clean file with a change:
+    if (event.contentChanges.length > 0) {
+      return;
+    }
+
+    // there is a bit redudant since didSave already handle the save changes
+    // but not sure if there are other non-editor related change we are trying
+    // to capture, so leave it be for now...
+    this.refreshDocumentChange(event.document);
+  }
+
+  onWillSaveTextDocument(event: vsCodeTypes.TextDocumentWillSaveEvent): void {
+    if (event.document.isDirty) {
+      this.removeCachedTestResults(event.document, true);
+    }
+  }
+
+  onDidSaveTextDocument(document: vsCodeTypes.TextDocument): void {
+    this.handleOnSaveRun(document);
+    this.refreshDocumentChange(document);
+  }
+
+  private handleOnSaveRun(document: vsCodeTypes.TextDocument): void {
+    if (!this.isSupportedDocument(document)) {
+      return;
+    }
+    const isTestFile = this.testResultProvider.isTestFile(document.fileName);
+    if (isTestFile === 'no') {
+      this.dirtyFiles.add(document.fileName);
+    }
   }
 }

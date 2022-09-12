@@ -33,3 +33,19 @@ export const prefixWorkspace = (vscode: vsCodeTypes.VSCode, context: NightwatchE
   }
   return message;
 };
+
+/** convert the lower-case drive letter filePath (like vscode.URI.fsPath) to lower-case. If path does not contain lower-case drive letter, returns undefined. */
+export function toUpperCaseDriveLetter(filePath: string): string | undefined {
+  const match = filePath.match(/^([a-z]:\\)(.*)$/);
+  if (match) {
+    return `${match[1].toUpperCase()}${match[2]}`;
+  }
+}
+
+/**
+ * convert vscode.URI.fsPath to the actual file system file-path, i.e. convert drive letter to upper-case for windows
+ * @param filePath
+ */
+export function toFilePath(filePath: string): string {
+  return toUpperCaseDriveLetter(filePath) || filePath;
+}

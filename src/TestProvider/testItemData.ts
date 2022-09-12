@@ -260,7 +260,7 @@ export class TestDocumentRoot extends TestResultData {
   };
 }
 
-export class WorkspaceRoot extends TestItemDataBase {
+export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
   private testDocuments: Map<string, TestDocumentRoot>;
   private listeners: vsCodeTypes.Disposable[];
   private cachedRun: Map<string, TestItemRun>;
@@ -293,6 +293,10 @@ export class WorkspaceRoot extends TestItemDataBase {
   // TODO: transform was here, add it back incase if it causes problem
   getNightwatchRunRequest(): NightwatchExtRequestType {
     return { type: 'all-tests' };
+  }
+
+  getDebugInfo(): ReturnType<Debuggable['getDebugInfo']> {
+    return { fileName: this.uri.fsPath};
   }
 
   discoverTest(run: vscode.TestRun): void {
@@ -543,12 +547,12 @@ export class TestData extends TestResultData implements Debuggable {
     return {
       type: 'by-file-test',
       testFileName: this.uri.fsPath,
-      testName: this.node.fullName,
+      testName: this.node.name,
     };
   }
 
   getDebugInfo(): ReturnType<Debuggable['getDebugInfo']> {
-    return { fileName: this.uri.fsPath, testNamePattern: this.node.fullName };
+    return { fileName: this.uri.fsPath, testNamePattern: this.node.name };
   }
 
   private updateItemRange(): void {

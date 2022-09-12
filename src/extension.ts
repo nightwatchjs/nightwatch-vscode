@@ -11,14 +11,6 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
     extension.installNightwatch();
   };
 
-  const runAllTests = (extension: NightwatchExt) => {
-    extension.runTests();
-  };
-
-  const debugAllTests = (extension: NightwatchExt) => {
-    extension.debugTests();
-  };
-
   context.subscriptions.push(
     extensionManager.registerCommand({
       type: 'all-workspaces',
@@ -28,17 +20,34 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
     extensionManager.registerCommand({
       type: 'active-text-editor',
       name: 'run-test',
-      callback: runAllTests,
+      callback: (extension) => {
+        if (vscode.window.activeTextEditor) {
+          extension.runAllTests(vscode.window.activeTextEditor);
+        }
+      },
     }),
     extensionManager.registerCommand({
       type: 'active-text-editor',
       name: 'debug-test',
-      callback: debugAllTests,
+      callback: (extension) => {
+        if (vscode.window.activeTextEditor) {
+          extension.debugTests(vscode.window.activeTextEditor?.document, ...[]);
+        }
+      },
     }),
-    vscode.workspace.onDidChangeConfiguration(
-      extensionManager.onDidChangeConfiguration,
-      extensionManager
-    )
+    vscode.workspace.onDidChangeConfiguration(extensionManager.onDidChangeConfiguration, extensionManager),
+
+    vscode.workspace.onDidChangeWorkspaceFolders(extensionManager.onDidChangeWorkspaceFolders, extensionManager),
+
+    vscode.workspace.onDidCloseTextDocument(extensionManager.onDidCloseTextDocument, extensionManager),
+
+    vscode.window.onDidChangeActiveTextEditor(extensionManager.onDidChangeActiveTextEditor, extensionManager),
+    vscode.workspace.onDidChangeTextDocument(extensionManager.onDidChangeTextDocument, extensionManager),
+    vscode.workspace.onDidCreateFiles(extensionManager.onDidCreateFiles, extensionManager),
+    vscode.workspace.onDidRenameFiles(extensionManager.onDidRenameFiles, extensionManager),
+    vscode.workspace.onDidDeleteFiles(extensionManager.onDidDeleteFiles, extensionManager),
+    vscode.workspace.onDidSaveTextDocument(extensionManager.onDidSaveTextDocument, extensionManager),
+    vscode.workspace.onWillSaveTextDocument(extensionManager.onWillSaveTextDocument, extensionManager)
   );
 };
 

@@ -100,6 +100,14 @@ export class TestResultProvider {
     return Array.from(this.testSuites.keys());
   }
 
+  parseTestFiles(): void {
+    if (this.testFiles && this.testFiles?.length > 0) {
+      this.testFiles.forEach(file => {
+        this.getSortedResults(file);
+      });
+    }
+  }
+
   isTestFile(fileName: string): 'yes' | 'no' | 'unknown' {
     if (this.testFiles?.includes(fileName) || this.testSuites.get(fileName) != null) {
       return 'yes';

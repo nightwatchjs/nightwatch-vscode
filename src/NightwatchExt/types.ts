@@ -6,6 +6,7 @@ import { LoggingFactory } from '../Logging/types';
 import { NightwatchExt } from '../NightwatchExt';
 import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
+import { TestIdentifier } from '../TestResults/types';
 
 export type GetNightwatchExtByURI = (uri: vsCodeTypes.Uri) => NightwatchExt | undefined;
 
@@ -86,3 +87,6 @@ export interface NightwatchSessionEvents {
   onTestSessionStarted: vsCodeTypes.EventEmitter<NightwatchExtSessionContext>;
   onTestSessionStopped: vsCodeTypes.EventEmitter<void>;
 }
+
+// TODO: Move to DebugCodelens
+export type DebugTestIdentifier = string | TestIdentifier;
