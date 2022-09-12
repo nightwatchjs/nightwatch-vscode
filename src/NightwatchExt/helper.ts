@@ -28,6 +28,7 @@ export const createNightwatchExtContext = (
   settings: NightwatchExtensionResourceSettings
 ): NightwatchExtContext => {
   const createRunnerWorkspace = async () => {
+    const workspaceFolderName = workspaceFolder.name;
     const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(vscode, settings, workspaceFolder);
     return new ProjectWorkspace(
       settings.testPath ?? '',
@@ -35,7 +36,8 @@ export const createNightwatchExtContext = (
       nightwatchCommandLine,
       settings.debugMode,
       settings.nodeEnv,
-      settings.shell
+      settings.shell,
+      workspaceFolderName
     );
   };
 

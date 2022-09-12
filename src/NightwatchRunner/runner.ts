@@ -1,9 +1,12 @@
 import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
+import { existsSync, readFile } from 'fs';
+import { tmpdir } from 'os';
+import path from 'path';
 import { Logging, LoggingFactory } from '../Logging/types';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
-import { Options, RunnerEvent } from './types';
+import { Options, OutputType, RunnerEvent } from './types';
 
 export const runnerEvents: RunnerEvent[] = [
   'executableOutput',
@@ -13,11 +16,18 @@ export const runnerEvents: RunnerEvent[] = [
   'terminalError',
 ];
 
+const outputTypes = {
+  unknown: 0,
+  testResults: 1,
+  noTest: 2,
+};
+
 export default class Runner extends EventEmitter {
   private logging: Logging;
   childProcess?: ChildProcess;
   workspace: ProjectWorkspace;
   options: Options;
+  outputPath: string;
   _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
   _exited: boolean;
 
@@ -27,6 +37,10 @@ export default class Runner extends EventEmitter {
     this._createProcess = createProcess;
     this.workspace = workspace;
     this.options = options || {};
+    this.outputPath = path.join(
+      tmpdir(),
+      `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}.json`
+    );
     this._exited = false;
     this.logging = logger.create('Runner');
   }
@@ -36,9 +50,10 @@ export default class Runner extends EventEmitter {
       return this.options.args.args;
     }
 
-    const args = [];
+    const args = ['--report-filename', this.outputPath];
+    this.logging('debug', `JSON output location: ${this.outputPath}`);
     if (this.options.env) {
-      args.push(`-e`, this.options.env);
+      args.unshift(`-e`, this.options.env);
     }
     return args;
   }
@@ -53,10 +68,12 @@ export default class Runner extends EventEmitter {
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
     this.childProcess.stdout!.on('data', (data: Buffer) => {
+      this._parseOutput(data, false, this.logging);
       this.emit('executableOutput', data.toString());
     });
 
     this.childProcess.stderr!.on('data', (data) => {
+      // this._parseOutput(data, false, this.logging)
       this.emit('executableStdErr', data);
     });
 
@@ -98,5 +115,52 @@ export default class Runner extends EventEmitter {
       }
     }
     delete this.childProcess;
+  }
+
+  _parseOutput(data: Buffer, isStdErr: boolean, logging: Logging): void {
+    const outputType = this.findOutputType(data);
+    switch (outputType) {
+      case outputTypes.noTest:
+      case outputTypes.unknown:
+        this.emit('executableStdErr', data);
+        break;
+      case outputTypes.testResults:
+        //TODO: implement executableJSON listener
+        readFile(this.outputPath, 'utf-8', (error, _data) => {
+          if (error) {
+            const message = `JSON report not found at ${this.outputPath}`;
+            this.emit('terminalError', message);
+          } else {
+            this.emit('executableJSON', JSON.parse(_data));
+          }
+        });
+
+        break;
+      default:
+        // no special action needed, just report the output by its source
+        if (isStdErr) {
+          this.emit('executableStdErr', data);
+        } else {
+          this.emit('executableOutput', data.toString());
+        }
+        break;
+    }
+  }
+
+  findOutputType(data: Buffer): OutputType {
+    const noTestRegex = /No test source specified, please check "src_folders" config/;
+    const str = data.toString('utf-8');
+
+    const match = noTestRegex.test(str);
+
+    if (match) {
+      return outputTypes.noTest;
+    }
+
+    if (existsSync(this.outputPath)) {
+      return outputTypes.testResults;
+    }
+
+    return outputTypes.unknown;
   }
 }

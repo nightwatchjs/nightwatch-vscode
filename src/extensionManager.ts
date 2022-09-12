@@ -41,6 +41,11 @@ export class ExtensionManager {
       this.debugConfigurationProvider
     );
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
+    nightwatchExt.startSession();
+  }
+
+  unregister(workspaceFolder: vsCodeTypes.WorkspaceFolder): void {
+    this.unregisterByName(workspaceFolder.name);
   }
 
   getByExtName = (workspaceFolderName: string): NightwatchExt | undefined => {
@@ -99,6 +104,7 @@ export class ExtensionManager {
     const extension = this.extByWorkspace.get(key);
 
     if (extension) {
+      extension.deactivate();
       this.extByWorkspace.delete(key);
     }
   }

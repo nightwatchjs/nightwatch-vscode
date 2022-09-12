@@ -48,6 +48,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
       return this.task.promise;
     }
 
+    // TODO: Make environment dynamic, currently hardcoded to "chrome"
     const options: Options = {
       env: 'chrome',
       args: { args: [] },

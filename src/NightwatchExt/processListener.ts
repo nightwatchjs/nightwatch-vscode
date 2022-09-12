@@ -97,7 +97,7 @@ export class AbstractProcessListener {
   }
 
   protected isProcessError(code?: number): boolean {
-    // code = 1 is general error, usually mean the command emit error, which should already handled by other event processing, for example when jest has failed tests.
+    // code = 1 is general error, usually mean the command emit error, which should already handled by other event processing, for example when nightwatch has failed tests.
     // However, error beyond 1, usually means some error outside of the command it is trying to execute, so reporting here for debugging purpose
     // see shell error code: https://www.linuxjournal.com/article/10844
     return code != null && code > 1;

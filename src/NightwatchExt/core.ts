@@ -2,8 +2,12 @@ import { OutputChannel } from 'vscode';
 import { Logging } from '../Logging/types';
 import * as messaging from '../messaging';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
+import { NightwatchExtExplorerContext } from '../TestProvider/types';
+import { TestResultProvider } from '../TestResults/testResultProvider';
+import { SortedTestResults } from '../TestResults/types';
 import * as vsCodeTypes from '../types/vscodeTypes';
 import { prefixWorkspace } from './../helpers';
+import { NightwatchTestProvider } from './../TestProvider/testProvider';
 import { DebugConfigurationProvider } from './debugConfigurationProvider';
 import { createNightwatchExtContext, getExtensionResourceSettings } from './helper';
 import { installNightwatch } from './installer';
@@ -13,17 +17,21 @@ import {
   NightwatchExtSessionContext,
   NightwatchRunEvent,
   NightwatchSessionEvents,
-  ProcessSession,
+  ProcessSession
 } from './types';
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
+  testResultProvider: TestResultProvider;
+
   private extContext: NightwatchExtContext;
   private logging: Logging;
   private outputChannel: OutputChannel;
   public events: NightwatchSessionEvents;
   private processSession: ProcessSession;
   private dirtyFiles: Set<string> = new Set();
+
+  private testProvider?: NightwatchTestProvider;
 
   constructor(
     private _vscode: vsCodeTypes.VSCode,
@@ -44,7 +52,14 @@ export class NightwatchExt {
     };
     this.setupRunEvents(this.events);
     this.processSession = this.createProcessSession();
+
     this.debugConfigurationProvider = debugConfigurationProvider;
+
+    this.testResultProvider = new TestResultProvider(
+      vscode,
+      this.events,
+      getNightwatchExtensionSettings.debugMode ?? false
+    );
 
     this.updateTestFileList();
   }
@@ -62,9 +77,40 @@ export class NightwatchExt {
     }
   }
 
+  public deactivate(): void {
+    this.stopSession();
+    this.outputChannel.dispose();
+
+    this.testResultProvider.dispose();
+    this.testProvider?.dispose();
+
+    this.events.onRunEvent.dispose();
+    this.events.onTestSessionStarted.dispose();
+    this.events.onTestSessionStopped.dispose();
+  }
+
+  public async stopSession(): Promise<void> {
+    try {
+      this.outputChannel.appendLine('Stopping Nightwatch Session');
+      await this.processSession.stop();
+
+      this.testProvider?.dispose();
+      this.testProvider = undefined;
+
+      this.events.onTestSessionStopped.fire();
+
+      this.outputChannel.appendLine('Nightwatch Session Stopped');
+    } catch (e) {
+      const msg = prefixWorkspace(vscode, this.extContext, 'Failed to stop nightwatch session');
+      this.logging('error', `${msg}:`, e);
+      this.outputChannel.appendLine('Failed to stop nightwatch session');
+      messaging.systemErrorMessage(vscode, '${msg}...');
+    }
+  }
+
   onDidChangeActiveTextEditor(editor: vsCodeTypes.TextEditor): void {
     // TODO: Add Update decorators function, and Diagnostics
-    console.log('Editor', editor);
+    this.triggerUpdateActiveEditor(editor);
   }
 
   public runAllTests(): void {
@@ -80,10 +126,39 @@ export class NightwatchExt {
   }
 
   private createProcessSession(): ProcessSession {
+    // Todo: updateWithData to parse result and add diagnostic
     return createProcessSession({
       ...this.extContext,
+      updateWithData: this.updateWithData.bind(this),
       onRunEvent: this.events.onRunEvent,
     });
+  }
+
+  public triggerUpdateActiveEditor(editor: vsCodeTypes.TextEditor): void {
+    this.updateTestFileEditor(editor);
+  }
+
+  /**
+   * refresh UI for the given document editor or all active editors in the workspace
+   * @param document refresh UI for the specific document. if undefined, refresh all active editors in the workspace.
+   */
+  private refreshDocumentChange(document?: vsCodeTypes.TextDocument): void {
+    for (const editor of vscode.window.visibleTextEditors) {
+      if (
+        (document && editor.document === document) ||
+        vscode.workspace.getWorkspaceFolder(editor.document.uri) === this.extContext.workspace
+      ) {
+        this.triggerUpdateActiveEditor(editor);
+      }
+    }
+
+    // this.updateStatusBar({
+    //   stats: this.toSBStats(this.testResultProvider.getTestSuiteStats()),
+    // });
+  }
+
+  private updateWithData(): void {
+    this.refreshDocumentChange();
   }
 
   private setupRunEvents(events: NightwatchSessionEvents): void {
@@ -124,6 +199,53 @@ export class NightwatchExt {
     this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings);
     this.processSession = this.createProcessSession();
     this.updateTestFileList();
+    return this.startSession();
+  }
+
+  public startSession() {
+    this.testProvider?.dispose();
+    this.testProvider = new NightwatchTestProvider(vscode, this.getExtExplorerContext());
+  }
+
+  private isTestFileEditor(editor: vsCodeTypes.TextEditor): boolean {
+    // if (!this.isSupportedDocument(editor.document)) {
+    //   return false;
+    // }
+
+    if (this.testResultProvider.isTestFile(editor.document.fileName) === 'no') {
+      return false;
+    }
+
+    // if isTestFile returns unknown or true, treated it like a test file to give it best chance to display any test result if ever available
+    return true;
+  }
+
+  private updateTestFileEditor(editor: vsCodeTypes.TextEditor): void {
+    if (!this.isTestFileEditor(editor)) {
+      return;
+    }
+
+    const filePath = editor.document.fileName;
+    let sortedResults: SortedTestResults | undefined;
+    try {
+      sortedResults = this.testResultProvider.getSortedResults(filePath);
+    } catch (e) {
+      this.outputChannel.appendLine(`${filePath}: failed to parse test results: ${e}`);
+      // assign an empty result so we can clear the outdated decorators/diagnostics etc
+      sortedResults = {
+        fail: [],
+        skip: [],
+        success: [],
+        unknown: [],
+      };
+    }
+
+    if (!sortedResults) {
+      return;
+    }
+
+    // this.updateDecorators(sortedResults, editor);
+    // updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
   }
 
   private updateTestFileList(): void {
@@ -144,11 +266,24 @@ export class NightwatchExt {
           }
         }
 
-        this.setTestFiles(files);
+        // this.setTestFiles(files);
         this.logging('debug', `found ${files?.length} testFiles`);
       },
     });
   }
+
+  private setTestFiles(list: string[] | undefined): void {
+    this.testResultProvider.updateTestFileList(list);
+  }
+
+  private getExtExplorerContext(): NightwatchExtExplorerContext {
+    return {
+      ...this.extContext,
+      sessionEvents: this.events,
+      session: this.processSession,
+      testResolveProvider: this.testResultProvider,
+      debugTests: this.debugTests,
+    };
   }
 
   async runTests(): Promise<void> {

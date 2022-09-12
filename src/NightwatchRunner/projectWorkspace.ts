@@ -47,13 +47,21 @@ export default class ProjectWorkspace {
    */
   shell?: string;
 
+  /**
+   * suffix string used as part of the output file path, this is to support concurrent Runners.
+   *
+   * @type {string}
+   */
+  outputFileSuffix?: string;
+
   constructor(
     testPath: string,
     pathToConfig: string,
     nightwatchCommandLine: string,
     debug?: boolean,
     nodeEnv?: { [key: string]: string | undefined },
-    shell?: string
+    shell?: string,
+    outputFileSuffix?: string
   ) {
     this.testPath = testPath;
     this.pathToConfig = pathToConfig;
@@ -61,6 +69,7 @@ export default class ProjectWorkspace {
     this.debug = debug;
     this.nodeEnv = nodeEnv;
     this.shell = shell;
+    this.outputFileSuffix = outputFileSuffix;
   }
 }
 
@@ -77,6 +86,7 @@ export const createProjectWorkspace = (config: ProjectWorkspaceConfig): ProjectW
     config.nightwatchCommandLine,
     config.debug,
     config.nodeEnv,
-    config.shell
+    config.shell,
+    config.outputFileSuffix
   );
 };
