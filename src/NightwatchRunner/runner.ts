@@ -36,22 +36,24 @@ export default class Runner extends EventEmitter {
 
     this._createProcess = createProcess;
     this.workspace = workspace;
-    this.options = options || {};
+    this.options = options || { reporter: options!.reporter };
     this.outputPath = path.join(
       tmpdir(),
-      `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}.json`
+      `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`
     );
     this._exited = false;
     this.logging = logger.create('Runner');
   }
 
   getArgs(): string[] {
+    const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
+    this.logging('debug', `JSON output location: ${this.outputPath}`);
+
     if (this.options.args && this.options.args.replace) {
+      this.options.args.args.push(...args);
       return this.options.args.args;
     }
 
-    const args = ['--report-filename', this.outputPath];
-    this.logging('debug', `JSON output location: ${this.outputPath}`);
     if (this.options.env) {
       args.unshift(`-e`, this.options.env);
     }

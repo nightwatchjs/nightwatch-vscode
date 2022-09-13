@@ -4,6 +4,10 @@ import Runner, { runnerEvents } from '../NightwatchRunner/runner';
 import { Options, RunnerEvent } from '../NightwatchRunner';
 import { stringifyRequest } from './helpers';
 import { NightwatchProcessInfo, NightwatchProcessRequest, RunnerTask, StopReason } from './types';
+// TODO: remove this and pass the vscode
+import * as vscode from 'vscode';
+import { extensionId } from '../appGlobals';
+import { join } from 'path';
 
 let SEQ = 0;
 
@@ -42,6 +46,13 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     return this.task.promise;
   }
 
+  private getReporterPath() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // TODO: replace "nightwatch-vscode.nightwatch" with extensionID
+    const extensionPath = vscode.extensions.getExtension('nightwatch-vscode.nightwatch')!.extensionPath;
+    return join(extensionPath, 'dist', 'reporter.js');
+  }
+
   private async startRunner(): Promise<void> {
     if (this.task) {
       this.logging('warn', 'the Runner task has already started');
@@ -51,6 +62,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     // TODO: Make environment dynamic, currently hardcoded to "chrome"
     const options: Options = {
       env: 'chrome',
+      reporter: this.getReporterPath(),
       args: { args: [] },
     };
 
@@ -59,7 +71,10 @@ export class NightwatchProcess implements NightwatchProcessInfo {
         options.args = { args: this.request.args, replace: true };
         break;
       case 'by-file-test':
-        options.args = { args: ["--testcase", this.request.testName, "--test", this.request.testFileName], replace: true };
+        options.args = {
+          args: ['--testcase', this.request.testName, '--test', this.request.testFileName],
+          replace: true,
+        };
         break;
       case 'by-file':
         options.args = { args: [this.request.testFileName], replace: true };
