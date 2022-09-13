@@ -77,6 +77,7 @@ export type NightwatchProcessRequest = NightwatchProcessRequestSimple & Nightwat
 export interface NightwatchProcessInfo {
   readonly id: string;
   readonly request: NightwatchProcessRequest;
+  exitCode: Number;
 }
 
 // TODO: look at this

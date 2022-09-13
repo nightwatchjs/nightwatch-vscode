@@ -127,7 +127,11 @@ export class NightwatchTestProvider {
           promises.push(
             new Promise((resolve, reject) => {
               try {
-                tData.scheduleTest(run, resolve);
+                let start = Date.now();
+                tData.scheduleTest(run, (code: Number) => {
+                  run.passed(test, Date.now() - start);
+                  resolve();
+                });
               } catch (e) {
                 const msg = `failed to schedule test for ${tData.item.id}: ${JSON.stringify(e)}`;
                 this.log('error', msg, e);
@@ -144,6 +148,7 @@ export class NightwatchTestProvider {
     }
 
     await Promise.allSettled(promises);
+    
     run.end();
   };
 

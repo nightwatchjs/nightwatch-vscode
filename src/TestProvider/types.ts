@@ -27,7 +27,7 @@ export interface TestItemData {
   readonly uri: vsCodeTypes.Uri;
   context: NightwatchTestProviderContext;
   discoverTest?: (run: vsCodeTypes.TestRun) => void;
-  scheduleTest: (run: vsCodeTypes.TestRun, end: () => void) => void;
+  scheduleTest: (run: vsCodeTypes.TestRun, end: (code: Number) => void) => void;
 }
 
 export interface NightwatchRunnable {
@@ -41,7 +41,7 @@ export interface WithUri {
 export interface TestItemRun {
   item: vsCodeTypes.TestItem;
   run: vsCodeTypes.TestRun;
-  end: () => void;
+  end: (code: Number) => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

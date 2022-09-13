@@ -19,6 +19,14 @@ export class NightwatchProcess implements NightwatchProcessInfo {
   private _stopReason?: StopReason;
   private extContext: NightwatchExtContext;
   private logging: Logging;
+  private _exitCode: Number;
+
+  public get exitCode(): Number {
+    return this._exitCode;
+  }
+  public set exitCode(value: Number) {
+    this._exitCode = value;
+  }
 
   constructor(extContext: NightwatchExtContext, request: NightwatchProcessRequest) {
     this.id = `${request.type}-${SEQ++}`;
@@ -26,6 +34,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     this.desc = `id: ${this.id}, request: ${stringifyRequest(request)}`;
     this.extContext = extContext;
     this.logging = extContext.loggingFactory.create(`NightwatchProcess ${request.type}`);
+    this._exitCode = 0;
   }
 
   public start(): Promise<void> {

@@ -47,7 +47,7 @@ abstract class TestItemDataBase implements TestItemData, NightwatchRunnable, Wit
     return this.item.uri!;
   }
 
-  scheduleTest(run: vsCodeTypes.TestRun, end: () => void): void {
+  scheduleTest(run: vsCodeTypes.TestRun, end: (code: Number) => void): void {
     const nightwatchRequest = this.getNightwatchRunRequest();
     const itemRun: TestItemRun = { item: this.item, run, end };
     deepItemState(this.item, run.enqueued);
@@ -60,7 +60,7 @@ abstract class TestItemDataBase implements TestItemData, NightwatchRunnable, Wit
       const msg = `failed to schedule test for ${this.item.id}`;
       run.errored(this.item, new vscode.TestMessage(msg));
       this.context.appendOutput(msg, run, true, 'red');
-      end();
+      end(1);
     }
   }
 
@@ -414,7 +414,7 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
         } catch (e) {
           this.log('error', `"${this.item.id}" onTestSuiteChanged: assertions-updated failed:`, e);
         } finally {
-          (itemRun ?? run).end();
+          (itemRun ?? run).end(0);
         }
         break;
       }
@@ -491,7 +491,7 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
           break;
         }
         case 'end': {
-          itemRun?.end();
+          itemRun?.end(0);
           break;
         }
         case 'exit': {
@@ -502,7 +502,7 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
             this.context.appendOutput(event.error, itemRun.run, true, 'red');
             itemRun.run.errored(itemRun.item, new vscode.TestMessage(event.error));
           }
-          itemRun?.end();
+          itemRun?.end(event.process.exitCode);
           break;
         }
       }
@@ -513,7 +513,7 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
 
   dispose(): void {
     this.unregisterEvents();
-    this.cachedRun.forEach((run) => run.end());
+    this.cachedRun.forEach((run) => run.end(0));
   }
 }
 
