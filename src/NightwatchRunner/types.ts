@@ -19,7 +19,13 @@ export type Options = {
   args?: RunArgs;
 };
 
-export type RunnerEvent = 'executableOutput' | 'executableStdErr' | 'processExit' | 'processClose' | 'terminalError';
+export type RunnerEvent =
+  | 'executableOutput'
+  | 'executableJSON'
+  | 'executableStdErr'
+  | 'processExit'
+  | 'processClose'
+  | 'terminalError';
 
 export type OutputType = number;
 
@@ -111,6 +117,7 @@ export type Location = {
   column: number;
 };
 
+// TODO: remove location
 export type TestAssertionStatus = {
   title: string;
   fullName: string;

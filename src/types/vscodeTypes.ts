@@ -3,6 +3,7 @@ export type {
   ConfigurationChangeEvent,
   DebugConfiguration,
   DebugConfigurationProvider,
+  DiagnosticCollection,
   Disposable,
   Event,
   EventEmitter,

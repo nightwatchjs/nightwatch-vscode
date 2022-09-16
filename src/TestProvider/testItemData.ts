@@ -284,7 +284,6 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
       undefined,
       ['run']
     );
-    // item.description = `(${extensionId}:${this.context.ext.workspace.name}) test item`;
 
     item.canResolveChildren = true;
     return item;
@@ -296,7 +295,7 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
   }
 
   getDebugInfo(): ReturnType<Debuggable['getDebugInfo']> {
-    return { fileName: this.uri.fsPath};
+    return { fileName: this.uri.fsPath };
   }
 
   discoverTest(run: vscode.TestRun): void {
@@ -544,11 +543,19 @@ export class TestData extends TestResultData implements Debuggable {
   }
 
   getNightwatchRunRequest(): NightwatchExtRequestType {
-    return {
-      type: 'by-file-test',
-      testFileName: this.uri.fsPath,
-      testName: this.node.name,
-    };
+    // TODO: remove describeBlock condition. It's added as nightwatch can't run describe at the moment
+    if (this.node.describeBlock) {
+      return {
+        type: 'by-file',
+        testFileName: this.uri.fsPath,
+      };
+    } else {
+      return {
+        type: 'by-file-test',
+        testFileName: this.uri.fsPath,
+        testName: this.node.name,
+      };
+    }
   }
 
   getDebugInfo(): ReturnType<Debuggable['getDebugInfo']> {

@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
 import { existsSync, readFile } from 'fs';
 import { tmpdir } from 'os';
-import path from 'path';
+import path, { join } from 'path';
 import { Logging, LoggingFactory } from '../Logging/types';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
@@ -11,6 +11,7 @@ import { Options, OutputType, RunnerEvent } from './types';
 export const runnerEvents: RunnerEvent[] = [
   'executableOutput',
   'executableStdErr',
+  'executableJSON',
   'processExit',
   'processClose',
   'terminalError',
@@ -19,7 +20,7 @@ export const runnerEvents: RunnerEvent[] = [
 const outputTypes = {
   unknown: 0,
   testResults: 1,
-  noTest: 2,
+  noTests: 2,
 };
 
 export default class Runner extends EventEmitter {
@@ -37,10 +38,7 @@ export default class Runner extends EventEmitter {
     this._createProcess = createProcess;
     this.workspace = workspace;
     this.options = options || { reporter: options!.reporter };
-    this.outputPath = path.join(
-      tmpdir(),
-      `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`
-    );
+    this.outputPath = path.join(tmpdir(), `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`);
     this._exited = false;
     this.logging = logger.create('Runner');
   }
@@ -70,13 +68,13 @@ export default class Runner extends EventEmitter {
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
     this.childProcess.stdout!.on('data', (data: Buffer) => {
-      // this._parseOutput(data, false, this.logging);
-      this.emit('executableOutput', data.toString());
+      this._parseOutput(data, false, this.logging);
+      // this.emit('executableOutput', data.toString());
     });
 
     this.childProcess.stderr!.on('data', (data) => {
-      // this._parseOutput(data, true, this.logging)
-      this.emit('executableStdErr', data);
+      this._parseOutput(data, true, this.logging);
+      // this.emit('executableStdErr', data);
     });
 
     this.childProcess.on('exit', (code: number | null, signal: string | null) => {
@@ -122,13 +120,13 @@ export default class Runner extends EventEmitter {
   _parseOutput(data: Buffer, isStdErr: boolean, logging: Logging): void {
     const outputType = this.findOutputType(data);
     switch (outputType) {
-      case outputTypes.noTest:
-      case outputTypes.unknown:
+      case outputTypes.noTests:
         this.emit('executableStdErr', data);
         break;
       case outputTypes.testResults:
         //TODO: implement executableJSON listener
-        readFile(this.outputPath, 'utf-8', (error, _data) => {
+        const jsonReport = join(this.outputPath, 'report.json');
+        readFile(jsonReport, 'utf-8', (error, _data) => {
           if (error) {
             const message = `JSON report not found at ${this.outputPath}`;
             this.emit('terminalError', message);
@@ -136,7 +134,6 @@ export default class Runner extends EventEmitter {
             this.emit('executableJSON', JSON.parse(_data));
           }
         });
-
         break;
       default:
         // no special action needed, just report the output by its source
@@ -151,18 +148,15 @@ export default class Runner extends EventEmitter {
 
   findOutputType(data: Buffer): OutputType {
     const noTestRegex = /No test source specified, please check "src_folders" config/;
-    const str = data.toString('utf-8');
+    const testResultsRegex = /Wrote [a-zA-Z]+ report file to:/;
 
-    const match = noTestRegex.test(str);
+    const checks = [
+      { regex: testResultsRegex, messageType: outputTypes.testResults },
+      { regex: noTestRegex, messageType: outputTypes.noTests },
+    ];
 
-    if (match) {
-      return outputTypes.noTest;
-    }
-
-    if (existsSync(this.outputPath)) {
-      return outputTypes.testResults;
-    }
-
-    return outputTypes.unknown;
+    const str = data.toString('utf8');
+    const match = checks.find(({ regex }) => regex.test(str));
+    return match ? match.messageType : outputTypes.unknown;
   }
 }

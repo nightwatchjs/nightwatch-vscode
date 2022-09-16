@@ -2,6 +2,9 @@
 
 This extension envisions an integrated user experience that will help you to write tests, run tests & view the output in a single place.
 
+<img width="1552" alt="Screenshot 2022-09-16 at 1 18 43 PM" src="https://user-images.githubusercontent.com/8705386/190586086-b9f14ee1-576c-4ddd-81cb-8e34c02d1212.png">
+
+
 Some of the key features are
 
 - [Easy Installation](#easy-installation)

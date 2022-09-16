@@ -30,6 +30,12 @@ export class AbstractProcessListener {
         break;
       }
 
+      case 'executableJSON': {
+        // TODO: replace any with NightwatchTotalResults
+        this.onExecutableJSON(nightwatchProcess, args[0] as any);
+        break;
+      }
+
       case 'executableStdErr': {
         const data = (args[0] as Buffer).toString();
         this.onExecutableStdErr(nightwatchProcess, cleanAnsi(data), data);
@@ -67,6 +73,11 @@ export class AbstractProcessListener {
   // TODO: remove _raw if not used
   protected onExecutableOutput(process: NightwatchProcess, data: string, _raw: string): void {
     this.logging('debug', `${process.request.type} onExecutableOutput:`, data);
+  }
+
+  // TODO: replace any with NightwatchTotalResults
+  protected onExecutableJSON(process: NightwatchProcess, data: any): void {
+    this.logging('debug', `${process.request.type} onExecutableJSON:`, data);
   }
 
   protected onExecutableStdErr(process: NightwatchProcess, data: string, _raw: string): void {
@@ -109,6 +120,7 @@ export class RunTestListener extends AbstractProcessListener {
     return 'RunTestListener';
   }
 
+  //=== event handlers ===
   protected onExecutableStdErr(process: NightwatchProcess, message: string, raw: string): void {
     if (message.length <= 0) {
       return;
@@ -121,6 +133,11 @@ export class RunTestListener extends AbstractProcessListener {
     if (!(output.length <= 0)) {
       this.onRunEvent.fire({ type: 'data', process, text: output, raw });
     }
+  }
+
+  // TODO: replace any with NightwatchTotalResults
+  protected onExecutableJSON(process: NightwatchProcess, data: any): void {
+    this.session.context.updateWithData(data, process);
   }
 
   protected onTerminalError(process: NightwatchProcess, data: string, raw: string): void {

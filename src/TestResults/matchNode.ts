@@ -27,6 +27,7 @@ export class BaseNode {
   events: Set<MatchEvent>;
   group: this[];
   private _ancestorTitles: string[];
+  describeBlock: boolean;
 
   constructor(name: string, zeroBasedLine: number, attrs?: OptionalAttributes) {
     this.name = name;
@@ -35,6 +36,7 @@ export class BaseNode {
     this._ancestorTitles = [];
     this.attrs = attrs ?? {};
     this.events = new Set();
+    this.describeBlock = zeroBasedLine === -1 ? true: false;
   }
 
   hasUnknownLocation(): boolean {

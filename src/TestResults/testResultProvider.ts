@@ -1,6 +1,7 @@
 import { IParseResults, parse } from 'jest-editor-support';
 import { NightwatchSessionEvents } from '../NightwatchExt';
-import { TestReconciliationStateType } from '../NightwatchRunner';
+import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
+import { TestFileAssertionStatus, TestReconciliationStateType } from '../NightwatchRunner';
 import TestReconciler from '../NightwatchRunner/testReconciler';
 import * as vsCodeTypes from './../types/vscodeTypes';
 import * as match from './matchByContext';
@@ -102,7 +103,7 @@ export class TestResultProvider {
 
   parseTestFiles(): void {
     if (this.testFiles && this.testFiles?.length > 0) {
-      this.testFiles.forEach(file => {
+      this.testFiles.forEach((file) => {
         this.getSortedResults(file);
       });
     }
@@ -243,9 +244,24 @@ export class TestResultProvider {
     return result;
   }
 
-  // updateTestResults(data: NightwatchTotalResults, process: NightwatchProcessInfo): TestFileAssertionStatus[] {
-  //   // TODO: implement
-  // }
+  // TODO: replace any with NightwatchTotalResults
+  // TestFileAssertionStatus[]
+  updateTestResults(data: any, process: NightwatchProcessInfo): TestFileAssertionStatus[] {
+    const results = this.reconciler.updateFileWithNightwatchStatus(data);
+    results?.forEach((r) => {
+      this.testSuites.set(r.file, {
+        status: r.status,
+        message: r.message,
+        assertionContainer: r.assertions ? match.buildAssertionContainer(r.assertions) : undefined,
+      });
+    });
+    this.events.testSuiteChanged.fire({
+      type: 'assertions-updated',
+      files: results.map((r) => r.file),
+      process,
+    });
+    return results;
+  }
 
   removeCachedResults(filePath: string): void {
     this.testSuites.delete(filePath);

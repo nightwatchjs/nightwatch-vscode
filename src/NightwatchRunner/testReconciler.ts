@@ -1,6 +1,5 @@
-import path from 'path';
 import type { TestFileAssertionStatus, TestAssertionStatus, TestReconciliationStateType } from './types';
-
+import { parse, StackFrame } from "stacktrace-parser";
 import type { FormattedTestResults } from './types';
 
 /**
@@ -19,8 +18,68 @@ export default class TestReconciler {
   // instance properties. This is 1) to prevent race condition 2) the data is already
   // stored in the this.fileStatuses, no dup is better 3) client will most likely need to process
   // all the results anyway.
-  updateFileWithNightwatchStatus(results: FormattedTestResults): void{
+  // TODO: update any with FormattedTestResults
+  updateFileWithNightwatchStatus(results: any): TestFileAssertionStatus[] {
     // TODO: implement this method
+    console.log(results);
+
+    const statusList: TestFileAssertionStatus[] = [];
+    Object.values(results.modules).forEach((file: any) => {
+      // Module passed/Failed status
+      const status = this.statusToReconciliationState(file.status);
+      // Create our own simpler representation
+      const fileStatus: TestFileAssertionStatus = {
+        assertions: this.mapAssertions(file.modulePath, Object.entries(file.completed)),
+        file: file.modulePath,
+        message: (file.lastError && file.lastError.message) || '',
+        status,
+      };
+      this.fileStatuses[file.modulePath] = fileStatus;
+      statusList.push(fileStatus);
+    });
+    return statusList;
+  }
+
+  // A failed test also contains the stack trace for an `expect`
+  // we don't get this as structured data, but what we get
+  // is useful enough to make it for ourselves
+
+  // TODO: replace any with Array<FormattedAssertionResult>
+  mapAssertions(filename: string, assertions: any): Array<TestAssertionStatus> {
+    // Change all failing assertions into structured data
+    return assertions.map((assertionData: any) => {
+      const title = assertionData[0];
+      const assertion = assertionData[1];
+
+      const stackErrorMessage = assertion.lastError && assertion.lastError.stack ;
+      let short = null;
+      let line = null;
+      let message = null;
+      if (stackErrorMessage) {
+        const parsedStacks = parse(stackErrorMessage);
+        const parsedStack = filename ? parsedStacks.find((o) => o.file === filename) : parsedStacks[0];
+        
+        short = (assertion.lastError && assertion.lastError.message) || '';
+        line = parsedStack?.lineNumber;
+        message = this.generateStackMessage(assertion.lastError, assertion.assertions);
+      }
+      return {
+        title,
+        message: message || '',
+        shortMessage: short || '',
+        status: this.statusToReconciliationState(assertion.status),
+        line,
+        location: null,
+        fullName: title,
+        ancestorTitles: [],
+      };
+    });
+  }
+
+  generateStackMessage(lastError: any, assertions: any[]) {
+    const dataWithStackTrace = assertions.filter((assert: { stackTrace: string }) => assert.stackTrace !== '');
+    const result = dataWithStackTrace.find((data: { message: any }) => data.message === lastError.message);
+    return `Failure Message:\n\t${result.failure}\n\nStack Trace:\n\t${result.stackTrace}`;
   }
 
   /**
@@ -29,13 +88,6 @@ export default class TestReconciler {
    */
   removeTestFile(fileName: string) {
     delete this.fileStatuses[fileName];
-  }
-
-  // Pull the line out from the stack trace
-  lineOfError(message: string, filePath: string): number | null {
-    const filename = path.basename(filePath);
-    const restOfTrace = message.split(filename, 2)[1];
-    return restOfTrace ? parseInt(restOfTrace.split(':')[1], 10) : null;
   }
 
   statusToReconciliationState(status: string): TestReconciliationStateType {
@@ -69,7 +121,7 @@ export default class TestReconciler {
     if (!results || !results.assertions) {
       return null;
     }
-    const assertion = results.assertions.find((a) => a.title === name);
+    const assertion = results.assertions.find((a: { title: any }) => a.title === name);
     if (!assertion) {
       return null;
     }

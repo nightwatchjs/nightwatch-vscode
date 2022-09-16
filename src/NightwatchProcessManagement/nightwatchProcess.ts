@@ -48,8 +48,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
 
   private getReporterPath() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    // TODO: replace "nightwatch-vscode.nightwatch" with extensionID
-    const extensionPath = vscode.extensions.getExtension('nightwatch-vscode.nightwatch')!.extensionPath;
+    const extensionPath = vscode.extensions.getExtension(extensionId)!.extensionPath;
     return join(extensionPath, 'dist', 'reporter.js');
   }
 
@@ -59,9 +58,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
       return this.task.promise;
     }
 
-    // TODO: Make environment dynamic, currently hardcoded to "chrome"
     const options: Options = {
-      env: 'chrome',
       reporter: this.getReporterPath(),
       args: { args: [] },
     };

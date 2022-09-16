@@ -65,8 +65,8 @@ export type NightwatchRunEvent = RunEventBase &
 
 export interface NightwatchProcessContextRaw extends NightwatchExtContext {
   onRunEvent: vsCodeTypes.EventEmitter<NightwatchRunEvent>;
-  // TODO: Remove data if not used
-  updateWithData: () => void;
+  // TODO: replace any with NightwatchTotalResults
+  updateWithData: (data: any, process: NightwatchProcessInfo) => void;
 }
 
 export type NightwatchExtProcessContext = Readonly<NightwatchProcessContextRaw>;

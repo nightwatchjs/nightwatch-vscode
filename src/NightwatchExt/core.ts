@@ -21,6 +21,8 @@ import {
   ProcessSession,
 } from './types';
 import { supportedLanguageIds } from '../appGlobals';
+import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
+import { resetDiagnostics, updateCurrentDiagnostics, updateDiagnostics } from '../diagnostic';
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
@@ -35,6 +37,9 @@ export class NightwatchExt {
 
   private testProvider?: NightwatchTestProvider;
 
+  // The ability to show fails in the problems section
+  private failDiagnostics: vsCodeTypes.DiagnosticCollection;
+
   constructor(
     private _vscode: vsCodeTypes.VSCode,
     private vscodeContext: vsCodeTypes.ExtensionContext,
@@ -46,6 +51,7 @@ export class NightwatchExt {
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
     this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);
     this.debugConfigurationProvider = debugConfigurationProvider;
+    this.failDiagnostics = vscode.languages.createDiagnosticCollection(`Nightwatch (${workspaceFolder.name})`);
     this.logging = this.extContext.loggingFactory.create('NightwatchExt');
     this.outputChannel = vscode.window.createOutputChannel(`Nightwatch (${workspaceFolder.name})`);
     this.events = {
@@ -62,6 +68,8 @@ export class NightwatchExt {
     );
 
     this.updateTestFileList();
+    // reset the Nightwatch diagnostics
+    resetDiagnostics(this.failDiagnostics);
   }
 
   public async installNightwatch() {
@@ -178,7 +186,11 @@ export class NightwatchExt {
     // });
   }
 
-  private updateWithData(): void {
+  // TODO: replace any with NightwatchTotalResults
+  private updateWithData(data: any, process: NightwatchProcessInfo): void {
+    // TODO: process data to remove ANSI escape sequence characters from test results
+    const statusList = this.testResultProvider.updateTestResults(data, process);
+    updateDiagnostics(statusList, this.failDiagnostics);
     this.refreshDocumentChange();
   }
 
@@ -276,8 +288,7 @@ export class NightwatchExt {
       return;
     }
 
-    // this.updateDecorators(sortedResults, editor);
-    // updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
+    updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
   }
 
   private updateTestFileList(): void {

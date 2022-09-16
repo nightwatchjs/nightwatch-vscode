@@ -2,15 +2,19 @@
 	"name": "nightwatch",
 	"displayName": "Nightwatch",
 	"description": "Run Nightwatch tests in the Visual Studio Code",
-	"icon": "",
-	"version": "0.0.1",
+	"icon": "images/logo.png",
+	"version": "0.1.0",
 	"preview": true,
-	"publisher": "nightwatch-vscode",
+	"publisher": "browserstack.com",
 	"author": {
 		"name": "Vaibhav Singh",
 		"email": "vaibhav.s@browserstack.com"
 	},
-	"qna": "",
+	"galleryBanner": {
+		"theme": "dark",
+		"color": "#502D17"
+	},
+	"qna": "marketplace",
 	"license": "MIT",
 	"homepage": "https://github.com/nightwatchjs/nightwatch-vscode",
 	"repository": {
@@ -27,15 +31,23 @@
 		"Other",
 		"Testing"
 	],
+	"keywords": [
+		"nightwatch",
+		"debug",
+		"run"
+	],
 	"activationEvents": [
-		"workspaceContains:nightwatch.conf.js",
+		"workspaceContains:**/nightwatch.conf.js",
+		"workspaceContains:**/nightwatch.conf.cjs",
+		"workspaceContains:**/nightwatch.conf.ts",
+		"workspaceContains:**/nightwatch.json",
+		"workspaceContains:node_modules/.bin/nightwatch",
 		"onCommand:com.nightwatch.nightwatchExt.install-nightwatch",
 		"onCommand:com.nightwatch.nightwatchExt.run-test",
 		"onCommand:com.nightwatch.nightwatchExt.debug-test",
 		"onCommand:com.nightwatch.nightwatchExt.run-all-test"
 	],
 	"main": "./dist/extension.js",
-	"browser": "./dist/extension.js",
 	"contributes": {
 		"menus": {
 			"commandPalette": [
@@ -196,6 +208,7 @@
 		"jest-editor-support": "^30.1.0",
 		"json5": "^2.2.1",
 		"nightwatch": "^2.3.5-preview",
+		"stacktrace-parser": "^0.1.10",
 		"which": "^2.0.2"
 	}
 }
