@@ -1,5 +1,6 @@
 {
   "nightwatch.command.nightwatch.installation.title": "Install Nightwatch",
-  "nightwatch.command.nightwatch.runTest.title": "Run Test",
-  "nightwatch.command.nightwatch.debugTest.title": "Debug Test"
+  "nightwatch.command.nightwatch.runTest.title": "Run Test (Active File)",
+  "nightwatch.command.nightwatch.runAllTest.title": "Run All Test",
+  "nightwatch.command.nightwatch.debugTest.title": "Debug Test (Active File)"
 }

@@ -4,9 +4,9 @@ import {
   NightwatchProcessRequest,
   NightwatchProcessType,
   ScheduleStrategy,
-  NightwatchProcessManager
+  NightwatchProcessManager,
 } from '../NightwatchProcessManagement';
-import { RunTestListener } from './processListener';
+import { RunTestListener, ListTestFileListener } from './processListener';
 import { ListenerSession, NightwatchExtProcessContext, NightwatchExtRequestType, ProcessSession } from './types';
 
 const ProcessScheduleStrategy: Record<NightwatchProcessType, ScheduleStrategy> = {
@@ -71,17 +71,30 @@ export const createProcessSession = (context: NightwatchExtProcessContext): Proc
     switch (request.type) {
       case 'all-tests':
       case 'by-file':
-      case 'by-file-test':
+      case 'by-file-test': {
         const schedule = ProcessScheduleStrategy[request.type];
         return {
           ...request,
           listener: new RunTestListener(lSession),
           schedule,
         };
+      }
 
-      case 'list-test-files':
-        // TODO: implement list test files
-        break;
+      case 'list-test-files': {
+        const schedule = ProcessScheduleStrategy['not-test'];
+        const args = ['--list-files'];
+        if (context.workspace.uri.fsPath !== context.settings.testPath) {
+          args.unshift(context.settings.testPath);
+        }
+
+        return {
+          ...request,
+          type: 'not-test',
+          args,
+          listener: new ListTestFileListener(lSession, request.onResult),
+          schedule,
+        };
+      }
     }
     throw new Error(`Unexpected process type ${request.type}`);
   };

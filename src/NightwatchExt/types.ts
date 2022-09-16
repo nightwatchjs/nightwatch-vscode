@@ -2,16 +2,11 @@
 import { NightwatchProcessInfo, NightwatchProcessRequestSimple } from '../NightwatchProcessManagement/types';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
-// export interface NightwatchSessionEvents {
-//   onRunEvent: vsCodeTypes.EventEmitter<NightwatchRunEvent>;
-//   onTestSessionStarted: vsCodeTypes.EventEmitter<NightwatchExtSessionContext>;
-//   onTestSessionStopped: vsCodeTypes.EventEmitter<void>;
-// }
-
 import { LoggingFactory } from '../Logging/types';
 import { NightwatchExt } from '../NightwatchExt';
 import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
+import { TestIdentifier } from '../TestResults/types';
 
 export type GetNightwatchExtByURI = (uri: vsCodeTypes.Uri) => NightwatchExt | undefined;
 
@@ -70,8 +65,8 @@ export type NightwatchRunEvent = RunEventBase &
 
 export interface NightwatchProcessContextRaw extends NightwatchExtContext {
   onRunEvent: vsCodeTypes.EventEmitter<NightwatchRunEvent>;
-  // TODO: Remove data if not used
-  // updateWithData: (data: unknown, process: NightwatchProcessInfo) => void;
+  // TODO: replace any with NightwatchTotalResults
+  updateWithData: (data: any, process: NightwatchProcessInfo) => void;
 }
 
 export type NightwatchExtProcessContext = Readonly<NightwatchProcessContextRaw>;
@@ -92,3 +87,6 @@ export interface NightwatchSessionEvents {
   onTestSessionStarted: vsCodeTypes.EventEmitter<NightwatchExtSessionContext>;
   onTestSessionStopped: vsCodeTypes.EventEmitter<void>;
 }
+
+// TODO: Move to DebugCodelens
+export type DebugTestIdentifier = string | TestIdentifier;

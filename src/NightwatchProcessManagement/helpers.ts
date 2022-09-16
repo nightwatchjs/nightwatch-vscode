@@ -41,7 +41,7 @@ export const isRequestEqual = (request1: NightwatchProcessRequest, request2: Nig
         request1.testName === request2.testName
       );
     case 'not-test':
-      return request1.type === request2.type;
+      return request1.type === request2.type && request1.args === request2.args;
     default:
       return request1.type === request2.type;
   }

@@ -11,3 +11,7 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+sandbox/**
+tests-output/**
+test-output/**
+logs/**

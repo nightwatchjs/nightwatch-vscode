@@ -4,6 +4,10 @@ import Runner, { runnerEvents } from '../NightwatchRunner/runner';
 import { Options, RunnerEvent } from '../NightwatchRunner';
 import { stringifyRequest } from './helpers';
 import { NightwatchProcessInfo, NightwatchProcessRequest, RunnerTask, StopReason } from './types';
+// TODO: remove this and pass the vscode
+import * as vscode from 'vscode';
+import { extensionId } from '../appGlobals';
+import { join } from 'path';
 
 let SEQ = 0;
 
@@ -42,6 +46,12 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     return this.task.promise;
   }
 
+  private getReporterPath() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const extensionPath = vscode.extensions.getExtension(extensionId)!.extensionPath;
+    return join(extensionPath, 'dist', 'reporter.js');
+  }
+
   private async startRunner(): Promise<void> {
     if (this.task) {
       this.logging('warn', 'the Runner task has already started');
@@ -49,16 +59,26 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     }
 
     const options: Options = {
-      env: 'chrome',
+      reporter: this.getReporterPath(),
+      args: { args: [] },
     };
 
-    // switch (this.request.type) {
-    //   case 'all-tests':
-
-    //     break;
-    //   default:
-    //     break;
-    // }
+    switch (this.request.type) {
+      case 'not-test':
+        options.args = { args: this.request.args, replace: true };
+        break;
+      case 'by-file-test':
+        options.args = {
+          args: ['--testcase', this.request.testName, '--test', this.request.testFileName],
+          replace: true,
+        };
+        break;
+      case 'by-file':
+        options.args = { args: [this.request.testFileName], replace: true };
+      default:
+        this.logging('error', `could not find valid request type ${this.request.type}`);
+        break;
+    }
 
     const runnerWorkspace = await this.extContext.createRunnerWorkspace();
     const runner = new Runner(runnerWorkspace, this.extContext.loggingFactory, options);

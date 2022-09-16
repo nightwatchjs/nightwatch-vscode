@@ -10,14 +10,7 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
   const installNightwatch = (extension: NightwatchExt) => {
     extension.installNightwatch();
   };
-
-  const runAllTests = (extension: NightwatchExt) => {
-    extension.runTests();
-  };
-
-  const debugAllTests = (extension: NightwatchExt) => {
-    extension.debugTests();
-  };
+  const runAllTests = (extension: NightwatchExt) => extension.runAllTests();
 
   context.subscriptions.push(
     extensionManager.registerCommand({
@@ -26,19 +19,38 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
       callback: installNightwatch,
     }),
     extensionManager.registerCommand({
-      type: 'active-text-editor',
-      name: 'run-test',
+      type: 'all-workspaces',
+      name: 'run-all-test',
       callback: runAllTests,
     }),
     extensionManager.registerCommand({
       type: 'active-text-editor',
-      name: 'debug-test',
-      callback: debugAllTests,
+      name: 'run-test',
+      callback: (extension) => {
+        if (vscode.window.activeTextEditor) {
+          extension.runAllTests(vscode.window.activeTextEditor);
+        }
+      },
     }),
-    vscode.workspace.onDidChangeConfiguration(
-      extensionManager.onDidChangeConfiguration,
-      extensionManager
-    )
+    extensionManager.registerCommand({
+      type: 'active-text-editor',
+      name: 'debug-test',
+      callback: (extension) => {
+        if (vscode.window.activeTextEditor) {
+          extension.debugTests(vscode.window.activeTextEditor?.document, ...[]);
+        }
+      },
+    }),
+    vscode.workspace.onDidChangeConfiguration(extensionManager.onDidChangeConfiguration, extensionManager),
+    vscode.workspace.onDidChangeWorkspaceFolders(extensionManager.onDidChangeWorkspaceFolders, extensionManager),
+    vscode.workspace.onDidCloseTextDocument(extensionManager.onDidCloseTextDocument, extensionManager),
+    vscode.window.onDidChangeActiveTextEditor(extensionManager.onDidChangeActiveTextEditor, extensionManager),
+    vscode.workspace.onDidChangeTextDocument(extensionManager.onDidChangeTextDocument, extensionManager),
+    vscode.workspace.onDidCreateFiles(extensionManager.onDidCreateFiles, extensionManager),
+    vscode.workspace.onDidRenameFiles(extensionManager.onDidRenameFiles, extensionManager),
+    vscode.workspace.onDidDeleteFiles(extensionManager.onDidDeleteFiles, extensionManager),
+    vscode.workspace.onDidSaveTextDocument(extensionManager.onDidSaveTextDocument, extensionManager),
+    vscode.workspace.onWillSaveTextDocument(extensionManager.onWillSaveTextDocument, extensionManager)
   );
 };
 

@@ -68,7 +68,8 @@ export type NightwatchProcessRequestSimple =
       testName: string;
     }
   | {
-      type: Extract<NightwatchProcessType, 'not-test'>;
+    type: Extract<NightwatchProcessType, 'not-test'>,
+    args: string[]
     };
 
 export type NightwatchProcessRequest = NightwatchProcessRequestSimple & NightwatchProcessRequestCommon;
