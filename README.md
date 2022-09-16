@@ -1,4 +1,4 @@
-# Nightwatch For VS Code
+# Overview
 
 Stay in your focus zone while testing. Run your Nightwatch tests from VS Code itself without switching windows or screens to run or debug your tests.
 
