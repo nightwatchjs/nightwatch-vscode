@@ -1,9 +1,9 @@
 # Change Log
 
-All notable changes to the "nightwatch-vscode" extension will be documented in this file.
+## 0.1.0
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+### initial release
 
-## [Unreleased]
-
-- Initial release
+* Ability to easily install Nightwatch
+* Run and Debug tests with an easy-to-use user interface
+* View test results in the Editor itself

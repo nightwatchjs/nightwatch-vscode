@@ -1,7 +1,7 @@
 {
 	"name": "nightwatch",
 	"displayName": "Nightwatch",
-	"description": "Run Nightwatch tests in the Visual Studio Code",
+	"description": "Write, Run and Debug your Nightwatch tests in VS Code",
 	"icon": "images/logo.png",
 	"version": "0.1.0",
 	"preview": true,
@@ -14,9 +14,9 @@
 		"theme": "dark",
 		"color": "#502D17"
 	},
-	"qna": "marketplace",
+	"qna": "https://github.com/nightwatchjs/nightwatch-vscode/issues",
 	"license": "MIT",
-	"homepage": "https://github.com/nightwatchjs/nightwatch-vscode",
+	"homepage": "https://nightwatchjs.org/",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/nightwatchjs/nightwatch-vscode"
@@ -28,11 +28,13 @@
 		"vscode": "^1.68.0"
 	},
 	"categories": [
-		"Other",
 		"Testing"
 	],
 	"keywords": [
 		"nightwatch",
+		"testing",
+		"runner",
+		"report",
 		"debug",
 		"run"
 	],
