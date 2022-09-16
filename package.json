@@ -200,7 +200,7 @@
 		"glob": "^8.0.3",
 		"mocha": "^10.0.0",
 		"ts-loader": "^9.3.1",
-		"typescript": "^4.7.4",
+		"typescript": "4.7.4",
 		"vscode-nls": "^5.0.1",
 		"vscode-nls-dev": "^4.0.0",
 		"webpack": "^5.72.1",
@@ -209,7 +209,7 @@
 	"dependencies": {
 		"jest-editor-support": "^30.1.0",
 		"json5": "^2.2.1",
-		"nightwatch": "^2.3.5-preview",
+		"nightwatch": "^2.3.6",
 		"stacktrace-parser": "^0.1.10",
 		"which": "^2.0.2"
 	}
