@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.1.1
+
+### Fixes
+
+* issue in windows test discovery, and test Run
+* fixes bugs around test tree generation
+
 ## 0.1.0
 
 ### initial release
