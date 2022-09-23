@@ -72,7 +72,7 @@ const findNightwatchConfigFile = async (vscode: vsCodeTypes.VSCode): Promise<str
   const configFiles = await vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1);
 
   for (const configFileUri of configFiles) {
-    return configFileUri.path;
+    return configFileUri.fsPath;
   }
 };
 

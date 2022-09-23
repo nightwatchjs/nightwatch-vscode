@@ -1,3 +1,4 @@
+import { isWindows } from './../helpers';
 import { ChildProcess, spawn } from 'child_process';
 import { Logging } from '../Logging/types';
 import ProjectWorkspace from './projectWorkspace';
@@ -5,7 +6,7 @@ import ProjectWorkspace from './projectWorkspace';
 function stringifyArgs(args: string[]): string[] {
   return args.map((arg) => {
     if (!arg.includes("--")) {
-      return JSON.stringify(arg);
+      return `${isWindows ? `"${arg}"`: JSON.stringify(arg) }`;
     }
     return arg;
   });  

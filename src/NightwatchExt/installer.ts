@@ -67,5 +67,5 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
     args.push('--browser=edge');
   }
 
-  terminal.sendText(`npm init nightwatch@latest -- --yes ${args.join(' ')}`, true);
+  terminal.sendText(`npm init nightwatch@latest . --yes -- --yes ${args.join(' ')}`, true);
 }
