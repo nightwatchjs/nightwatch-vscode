@@ -51,8 +51,6 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
     env: process.env,
   });
 
-  terminal.show();
-
   const args: string[] = [];
   if (result?.includes(googleChrome)) {
     args.push('--browser=chrome');
@@ -67,5 +65,8 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
     args.push('--browser=edge');
   }
 
-  terminal.sendText(`npm init nightwatch@latest . --yes -- --yes ${args.join(' ')}`, true);
+  if (args.length > 0) {
+    terminal.show();
+    terminal.sendText(`npm init nightwatch@latest . --yes -- --yes ${args.join(' ')}`, true);
+  }
 }
