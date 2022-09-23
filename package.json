@@ -3,7 +3,7 @@
 	"displayName": "Nightwatch",
 	"description": "Write, Run and Debug your Nightwatch tests in VS Code",
 	"icon": "images/logo.png",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"preview": true,
 	"publisher": "browserstackcom",
 	"author": {
@@ -12,7 +12,7 @@
 	},
 	"galleryBanner": {
 		"theme": "dark",
-		"color": "#502D17"
+		"color": "#24140A"
 	},
 	"qna": "https://github.com/nightwatchjs/nightwatch-vscode/issues",
 	"license": "MIT",

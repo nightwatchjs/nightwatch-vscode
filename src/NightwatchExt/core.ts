@@ -67,7 +67,6 @@ export class NightwatchExt {
       getNightwatchExtensionSettings.debugMode ?? false
     );
 
-    this.updateTestFileList();
     // reset the Nightwatch diagnostics
     resetDiagnostics(this.failDiagnostics);
   }
@@ -291,7 +290,7 @@ export class NightwatchExt {
     updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
   }
 
-  private updateTestFileList(): void {
+  public updateTestFileList(): void {
     this.processSession.scheduleProcess({
       type: 'list-test-files',
       onResult: (files, error) => {

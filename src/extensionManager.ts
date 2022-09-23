@@ -28,6 +28,7 @@ export class ExtensionManager {
     const vscode = this._vscode;
     vscode.workspace.workspaceFolders?.forEach((ws) => {
       if (!this.extByWorkspace.get(ws.name)) {
+        this.createFileSystemWatcher(ws);
         this.register(ws);
       }
     });
@@ -185,9 +186,55 @@ export class ExtensionManager {
     this.onFilesChange(files, (ext) => ext.onDidRenameFiles(event));
   }
 
+  createFileSystemWatcher(wsFolder: vsCodeTypes.WorkspaceFolder): void {
+    const vscode = this._vscode;
+
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(wsFolder, '**/*nightwatch*.conf.{ts,js,cjs}')
+    );
+
+    watcher.onDidChange((_uri) => {
+      vscode.workspace.workspaceFolders?.forEach((ws) => {
+        const ext = this.extByWorkspace.get(ws.name);
+        if (ext) {
+          ext.updateTestFileList();
+        }
+      });
+    });
+
+    watcher.onDidCreate((_uri) => {
+      vscode.workspace.workspaceFolders?.forEach((ws) => {
+        const ext = this.extByWorkspace.get(ws.name);
+        if (ext) {
+          ext.updateTestFileList();
+        }
+      });
+    });
+
+    watcher.onDidDelete((_uri) => {
+      vscode.workspace.workspaceFolders?.forEach((ws) => {
+        const ext = this.extByWorkspace.get(ws.name);
+        if (ext) {
+          ext.deactivate();
+        }
+      });
+    });
+  }
+
   activate(): void {
     const vscode = this._vscode;
     const vscodeActiveDocumentUri = vscode.window.activeTextEditor?.document.uri;
+
+    vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((value) => {
+      if (value.length > 0) {
+        vscode.workspace.workspaceFolders?.forEach((ws) => {
+          const ext = this.extByWorkspace.get(ws.name);
+          if (ext) {
+            ext.updateTestFileList();
+          }
+        });
+      }
+    });
 
     if (vscodeActiveDocumentUri) {
       const extension = this.getByDocumentUri(vscodeActiveDocumentUri);
