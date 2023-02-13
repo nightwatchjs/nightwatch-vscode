@@ -1,21 +1,29 @@
 import JSON5 from 'json5';
 import * as vscode from 'vscode';
 import { Logging } from '../Logging';
+import { systemErrorMessage, MessageAction } from '../messaging';
 import { NightwatchProcess } from '../NightwatchProcessManagement';
 import { NightwatchProcessEvent } from '../nightwatchProcessManagement';
 import * as vsCodeTypes from '../types/vscodeTypes';
 import { cleanAnsi } from './helper';
 import { ListenerSession, ListTestFilesCallback, NightwatchRunEvent } from './types';
 
+const POSSIBLE_DRIVER_ERR_REGEX = /([a-zA-z]+)driver cannot be found/im;
+
 export class AbstractProcessListener {
   protected session: ListenerSession;
   protected readonly logging: Logging;
   public onRunEvent: vsCodeTypes.EventEmitter<NightwatchRunEvent>;
+  // flag indicating driver not found
+  protected driverNotFound: boolean;
+  protected driverName: string;
 
   constructor(session: ListenerSession) {
     this.session = session;
     this.logging = session.context.loggingFactory.create(this.name);
     this.onRunEvent = session.context.onRunEvent;
+    this.driverNotFound = false;
+    this.driverName = '';
   }
 
   protected get name() {
@@ -120,10 +128,36 @@ export class RunTestListener extends AbstractProcessListener {
     return 'RunTestListener';
   }
 
+  private setupDriverInstallationAction(driver: string): MessageAction {
+    const [workspaceFolder] = vscode.workspace.workspaceFolders || [];
+
+    return {
+      title: 'Install Driver',
+      action: (): void => {
+        const terminal = vscode.window.createTerminal({
+          name: 'Install Driver',
+          cwd: workspaceFolder.uri.fsPath,
+          env: process.env,
+        });
+
+        terminal.show();
+        terminal.sendText(`npm i -D ${driver}`);
+      },
+    };
+  }
+
   //=== event handlers ===
   protected onExecutableStdErr(process: NightwatchProcess, message: string, raw: string): void {
     if (message.length <= 0) {
       return;
+    }
+    if (POSSIBLE_DRIVER_ERR_REGEX.test(message)) {
+      this.driverNotFound = true;
+
+      const match = POSSIBLE_DRIVER_ERR_REGEX.exec(message);
+      if (match) {
+        this.driverName = match[1];
+      }
     }
 
     this.onRunEvent.fire({ type: 'data', process, text: message, raw });
@@ -150,7 +184,15 @@ export class RunTestListener extends AbstractProcessListener {
 
   protected onProcessClose(process: NightwatchProcess): void {
     super.onProcessClose(process);
-    // const error = `Nightwatch process "${process.request.type}" ended unexpectedly`;
+
+    if (this.driverNotFound) {
+      systemErrorMessage(
+        vscode,
+        `${this.driverName}Driver not found`,
+        this.setupDriverInstallationAction(`${this.driverName.toLowerCase()}driver`)
+      );
+    }
+
     this.onRunEvent.fire({ type: 'exit', process });
   }
 }
@@ -182,7 +224,7 @@ export class ListTestFileListener extends AbstractProcessListener {
 
     try {
       // TODO: Handle empty string
-      const testFileList: string[] = JSON5.parse(this.buffer.toString());
+      const testFileList: string[] = JSON5.parse(this.buffer.toString()).default;
       if (!testFileList || testFileList.length === 0) {
         // no test file is probably all right
         this.logging('debug', 'no test file is found');
