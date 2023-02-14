@@ -186,11 +186,13 @@ export class RunTestListener extends AbstractProcessListener {
     super.onProcessClose(process);
 
     if (this.driverNotFound) {
-      systemErrorMessage(
-        vscode,
-        `${this.driverName}Driver not found`,
-        this.setupDriverInstallationAction(`${this.driverName.toLowerCase()}driver`)
-      );
+      this.driverName.length > 1
+        ? systemErrorMessage(
+            vscode,
+            `${this.driverName}Driver cannot be found in the current project.`,
+            this.setupDriverInstallationAction(`${this.driverName.toLowerCase()}driver`)
+          )
+        : systemErrorMessage(vscode, `${this.driverName}Driver cannot be found in the current project.`);
     }
 
     this.onRunEvent.fire({ type: 'exit', process });
