@@ -4,6 +4,7 @@ import { existsSync, readFile } from 'fs';
 import { tmpdir } from 'os';
 import path, { join } from 'path';
 import { Logging, LoggingFactory } from '../Logging/types';
+import { NightwatchExtensionResourceSettings } from '../Settings';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
 import { Options, OutputType, RunnerEvent } from './types';
@@ -31,8 +32,14 @@ export default class Runner extends EventEmitter {
   outputPath: string;
   _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
   _exited: boolean;
+  private _settings: NightwatchExtensionResourceSettings;
 
-  constructor(workspace: ProjectWorkspace, logger: LoggingFactory, options?: Options) {
+  constructor(
+    workspace: ProjectWorkspace,
+    logger: LoggingFactory,
+    settings: NightwatchExtensionResourceSettings,
+    options?: Options,
+  ) {
     super();
 
     this._createProcess = createProcess;
@@ -41,11 +48,18 @@ export default class Runner extends EventEmitter {
     this.outputPath = path.join(tmpdir(), `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`);
     this._exited = false;
     this.logging = logger.create('Runner');
+    this._settings = settings;
   }
 
   getArgs(): string[] {
     const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
     this.logging('debug', `JSON output location: ${this.outputPath}`);
+
+    if (this._settings.headlessMode) {
+      args.push('--headless');
+    }
+
+    args.push('--parallel', this._settings.parallels!.toString());
 
     if (this.options.args && this.options.args.replace) {
       this.options.args.args.push(...args);
@@ -55,6 +69,7 @@ export default class Runner extends EventEmitter {
     if (this.options.env) {
       args.unshift(`-e`, this.options.env);
     }
+
     return args;
   }
 

@@ -13,12 +13,15 @@ export const getExtensionResourceSettings = (
   const config = vscode.workspace.getConfiguration('nightwatch', uri);
 
   return {
-    nightwatchCommandLine: config.get<string>('nightwatchCommandLine'),
+    nightwatchCommandLine: config.get<string>('settings.nightwatchCommandLine'),
     shell: config.get<string>('shell'),
-    showTerminalOnLaunch: config.get<boolean>('showTerminalOnLaunch'),
-    testPath: path.join(uri.fsPath, config.get<string>('testPath')!),
-    nodeEnv: config.get<NodeEnv | null>('nodeEnv') ?? undefined,
-    debugMode: config.get<boolean>('debugMode'),
+    showTerminalOnLaunch: config.get<boolean>('settings.showTerminalOnLaunch'),
+    testPath: path.join(uri.fsPath, config.get<string>('settings.testPath')!),
+    nodeEnv: config.get<NodeEnv | null>('settings.nodeEnv') ?? undefined,
+    debugMode: config.get<boolean>('settings.debugMode'),
+    openReport: config.get<boolean>('quickSettings.openReport'),
+    headlessMode: config.get<boolean>('quickSettings.headlessMode'),
+    parallels: config.get<number>('quickSettings.parallels'),
   };
 };
 

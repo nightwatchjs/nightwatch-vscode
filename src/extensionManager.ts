@@ -1,3 +1,4 @@
+import { QuickSettingPanel } from './quickSettingPanel';
 import * as vsCodeTypes from './types/vscodeTypes';
 
 import { NightwatchExt } from './NightwatchExt';
@@ -39,9 +40,11 @@ export class ExtensionManager {
       this._vscode,
       this.context,
       workspaceFolder,
-      this.debugConfigurationProvider
+      this.debugConfigurationProvider,
+      this.context
     );
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
+    this._vscode.window.registerWebviewViewProvider(QuickSettingPanel.viewType, nightwatchExt.quickSettingPanel);
     nightwatchExt.startSession();
   }
 

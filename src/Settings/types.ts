@@ -8,4 +8,7 @@ export interface NightwatchExtensionResourceSettings {
   testPath: string;
   nodeEnv?: NodeEnv;
   debugMode?: boolean;
+  headlessMode?: boolean;
+  openReport?: boolean;
+  parallels?: number;
 }

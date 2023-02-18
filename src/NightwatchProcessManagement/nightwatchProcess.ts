@@ -82,7 +82,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     }
 
     const runnerWorkspace = await this.extContext.createRunnerWorkspace();
-    const runner = new Runner(runnerWorkspace, this.extContext.loggingFactory, options);
+    const runner = new Runner(runnerWorkspace, this.extContext.loggingFactory, this.extContext.settings, options);
 
     this.registerListener(runner);
 

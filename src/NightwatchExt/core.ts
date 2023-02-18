@@ -1,5 +1,6 @@
+import { QuickSettingPanel } from './../quickSettingPanel';
 import { DebugTestIdentifier } from './../TestProvider/types';
-import { OutputChannel } from 'vscode';
+import { OutputChannel, workspace } from 'vscode';
 import { Logging } from '../Logging/types';
 import * as messaging from '../messaging';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
@@ -23,6 +24,7 @@ import {
 import { supportedLanguageIds } from '../appGlobals';
 import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
 import { resetDiagnostics, updateCurrentDiagnostics, updateDiagnostics } from '../diagnostic';
+import { Settings } from '../Settings';
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
@@ -39,16 +41,26 @@ export class NightwatchExt {
 
   // The ability to show fails in the problems section
   private failDiagnostics: vsCodeTypes.DiagnosticCollection;
+  public quickSettingPanel: QuickSettingPanel;
+  public vsCodeSettings: Settings;
 
   constructor(
     private _vscode: vsCodeTypes.VSCode,
     private vscodeContext: vsCodeTypes.ExtensionContext,
-    private workspaceFolder: vsCodeTypes.WorkspaceFolder,
-    private debugConfigurationProvider: DebugConfigurationProvider
+    public workspaceFolder: vsCodeTypes.WorkspaceFolder,
+    private debugConfigurationProvider: DebugConfigurationProvider,
+    private context: vsCodeTypes.ExtensionContext
   ) {
     vscode = _vscode;
     this.vscodeContext = vscodeContext;
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
+    this.vsCodeSettings = new Settings(this._vscode, workspaceFolder.uri);
+    this.quickSettingPanel = new QuickSettingPanel(
+      vscode,
+      context.extensionUri,
+      workspaceFolder.uri,
+      this.vsCodeSettings
+    );
     this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);
     this.debugConfigurationProvider = debugConfigurationProvider;
     this.failDiagnostics = vscode.languages.createDiagnosticCollection(`Nightwatch (${workspaceFolder.name})`);
@@ -69,10 +81,20 @@ export class NightwatchExt {
 
     // reset the Nightwatch diagnostics
     resetDiagnostics(this.failDiagnostics);
+    this.quickSettingPanel.changeConfig();
   }
 
   public async installNightwatch() {
     installNightwatch(vscode);
+  }
+
+  public updateConfig<T>(configName: string, value: T) {
+    this.vsCodeSettings.set<T>(configName, value);
+  }
+
+  public getConfig<T>(configName: string) {
+    this.vsCodeSettings.json('quickSettings');
+    return this.vsCodeSettings.get<T>(configName);
   }
 
   public activate(): void {

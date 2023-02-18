@@ -95,12 +95,22 @@
 				"category": "Nightwatch",
 				"command": "com.nightwatch.nightwatchExt.debug-test",
 				"title": "%nightwatch.command.nightwatch.debugTest.title%"
+			},
+			{
+				"category": "Nightwatch",
+				"command": "com.nightwatch.nightwatchExt.headlessMode",
+				"title": "%nightwatch.command.nightwatch.headlessMode.title%"
+			},
+			{
+				"category": "Nightwatch",
+				"command": "com.nightwatch.nightwatchExt.openReport",
+				"title": "%nightwatch.command.nightwatch.OpenReport.title%"
 			}
 		],
 		"configuration": {
 			"title": "Nightwatch",
 			"properties": {
-				"nightwatch.shell": {
+				"nightwatch.settings.shell": {
 					"markdownDescription": "Shell path or login-shell to override the NIghtwatch runner process default shell (see node [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) for more details)",
 					"type": [
 						"string",
@@ -109,24 +119,24 @@
 					"default": null,
 					"scope": "resource"
 				},
-				"nightwatch.showTerminalOnLaunch": {
+				"nightwatch.settings.showTerminalOnLaunch": {
 					"description": "Automatically open test explorer's terminal upon launch",
 					"type": "boolean",
 					"default": true,
 					"scope": "window"
 				},
-				"nightwatch.nightwatchCommandLine": {
+				"nightwatch.settings.nightwatchCommandLine": {
 					"description": "Command line to start Nightwatch tests. This should be the same command line that users run nightwatch tests from a terminal/shell, with the ability to add additional arguments (by extension at runtime)",
 					"type": "string",
 					"scope": "resource"
 				},
-				"nightwatch.testPath": {
+				"nightwatch.settings.testPath": {
 					"description": "The path to your e2e test folder",
 					"type": "string",
 					"default": "",
 					"scope": "resource"
 				},
-				"nightwatch.nodeEnv": {
+				"nightwatch.settings.nodeEnv": {
 					"markdownDescription": "The env passed to runner process in addition to `process.env`",
 					"type": [
 						"object",
@@ -135,10 +145,28 @@
 					"default": null,
 					"scope": "resource"
 				},
-				"nightwatch.debugMode": {
+				"nightwatch.settings.debugMode": {
 					"description": "Enable debug mode to diagnose extension issues. (see developer console)",
 					"type": "boolean",
 					"default": false,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.headlessMode": {
+					"description": "Run Browser in headless Mode",
+					"type": "boolean",
+					"default": false,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.openReport": {
+					"description": "Open Report after the test run",
+					"type": "boolean",
+					"default": false,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.parallels": {
+					"description": "Specifies number of parallels nightwatch uses to spawn tests",
+					"type": "number",
+					"default": 2,
 					"scope": "resource"
 				}
 			}
@@ -174,7 +202,16 @@
 					}
 				]
 			}
-		]
+		],
+		"views": {
+			"test": [
+				{
+					"type": "webview",
+					"id": "com.nightwatch.nightwatchExt.quickSettingPanel",
+					"name": "Nightwatch Quick Settings"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
