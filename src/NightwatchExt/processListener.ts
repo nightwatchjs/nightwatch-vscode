@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { Logging } from '../Logging';
 import { systemErrorMessage, MessageAction } from '../messaging';
 import { NightwatchProcess } from '../NightwatchProcessManagement';
-import { NightwatchProcessEvent } from '../nightwatchProcessManagement';
+import { NightwatchProcessEvent } from '../NightwatchProcessManagement';
 import * as vsCodeTypes from '../types/vscodeTypes';
 import { cleanAnsi } from './helper';
 import { ListenerSession, ListTestFilesCallback, NightwatchRunEvent } from './types';
