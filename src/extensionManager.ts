@@ -54,7 +54,11 @@ export class ExtensionManager {
     });
 
     this._vscode.window.registerWebviewViewProvider(QuickSettingPanel.viewType, nightwatchExt.quickSettingPanel);
-    this._vscode.window.registerWebviewViewProvider(EnvironmentsPanel.viewType, nightwatchExt.environmentsPanel);
+    this._vscode.window.registerWebviewViewProvider(EnvironmentsPanel.viewType, nightwatchExt.environmentsPanel, {
+      webviewOptions: {
+        retainContextWhenHidden: true,
+      },
+    });
     nightwatchExt.startSession();
   }
 
@@ -126,7 +130,10 @@ export class ExtensionManager {
   onDidChangeConfiguration(event: vsCodeTypes.ConfigurationChangeEvent): void {
     const vscode = this._vscode;
 
-    if (event.affectsConfiguration('nightwatch')) {
+    if (
+      event.affectsConfiguration('nightwatch') &&
+      !(event.affectsConfiguration('nightwatch.quickSettings') || event.affectsConfiguration('nightwatch.environments'))
+    ) {
       vscode.workspace.workspaceFolders?.forEach((workspaceFolder) => {
         const nightwatchExt = this.getByExtName(workspaceFolder.name);
         if (nightwatchExt && event.affectsConfiguration('nightwatch', workspaceFolder.uri)) {

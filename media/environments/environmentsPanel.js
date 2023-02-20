@@ -34,7 +34,6 @@
       }
     }
     if (method === 'update-environments') {
-      console.log('>>>>>', params.environments);
       for (const input of document.querySelectorAll('input[type=checkbox]')) {
         const envName = input.getAttribute('name');
         if (params.environments.includes(envName)) {
