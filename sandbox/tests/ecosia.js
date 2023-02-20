@@ -1,7 +1,8 @@
-describe('Ecosia.org Demo', function () {
-  before((browser) => browser.navigateTo('https://www.ecosia.org/'));
+describe('Ecosia.org Demo', function() {
 
-  it('Demo test ecosia.org', function (browser) {
+  before(browser => browser.navigateTo('https://www.ecosia.org/'));
+
+  it('Demo test ecosia.org', function(browser) {
     browser
       .waitForElementVisible('body')
       .assert.titleContains('Ecosia')
@@ -12,5 +13,5 @@ describe('Ecosia.org Demo', function () {
       .assert.textContains('.layout__content', 'Nightwatch.js');
   });
 
-  after((browser) => browser.end());
+  after(browser => browser.end());
 });

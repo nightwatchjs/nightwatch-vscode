@@ -75,8 +75,9 @@ export class NightwatchProcess implements NightwatchProcessInfo {
         break;
       case 'by-file':
         options.args = { args: [this.request.testFileName], replace: true };
+        break;
       default:
-        this.logging('error', `could not find valid request type ${this.request.type}`);
+        this.logging("warn", `could not find valid request type: ${this.request.type}`);
         break;
     }
 

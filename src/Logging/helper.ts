@@ -7,10 +7,10 @@ export const colorizedOutput = <T>(style: UtilInspectColors, data: T): string =>
   return `\u001b[${color[0]}m${data}\u001b[${color[1]}m`;
 };
 
-export const styleString = <T, S>(styleTypes: T | UtilInspectColors[], str: S | string): string => {
-  return Object.values(styleTypes).reduce((resultStr: S, styleType: T) => {
-    return colorizedOutput(styleType as unknown as UtilInspectColors, resultStr);
-  }, str);
+export const styleString = <T extends UtilInspectColors | string, S>(styleTypes: T[], str: S | string): string => {
+  return styleTypes.reduce((resultStr: string, styleType: T) => {
+    return colorizedOutput(styleType as UtilInspectColors, resultStr);
+  }, str as string) as string;
 };
 
 export const getDateAndTime = new Date().toUTCString();
