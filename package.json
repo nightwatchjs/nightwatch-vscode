@@ -219,7 +219,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run package",
+		"vscode:prepublish": "npm run compile",
 		"compile-tests": "tsc -p . --outDir out",
 		"watch-tests": "tsc -p . -w --outDir out",
 		"compile": "tsc -p ./",
