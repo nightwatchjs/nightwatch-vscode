@@ -46,10 +46,12 @@ export class ExtensionManager {
     );
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
     // updating workspace state
-    // TODO: change to get NW Config dynamically
     const nwConfig = require('../sandbox/nightwatch.conf.js');
-    const workspaceState = this.context.workspaceState;
-    workspaceState.update('nwConfig', nwConfig);
+    this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((res) => {
+      const configPath = res[0].path;
+      const workspaceState = this.context.workspaceState;
+      workspaceState.update('nwConfig', nwConfig);
+    });
 
     this._vscode.window.registerWebviewViewProvider(QuickSettingPanel.viewType, nightwatchExt.quickSettingPanel);
     this._vscode.window.registerWebviewViewProvider(EnvironmentsPanel.viewType, nightwatchExt.environmentsPanel);
