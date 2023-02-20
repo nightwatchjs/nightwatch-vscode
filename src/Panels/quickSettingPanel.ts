@@ -1,10 +1,11 @@
 import { WebviewView, WebviewViewResolveContext } from 'vscode';
-import * as vsCodeTypes from './types/vscodeTypes';
+import * as vsCodeTypes from '../types/vscodeTypes';
 import os from 'os';
-import { Settings } from './Settings';
+import { Settings } from '../Settings';
+import { extensionName } from '../appGlobals';
 
 export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCodeTypes.Disposable {
-  public static readonly viewType = 'com.nightwatch.nightwatchExt.quickSettingPanel';
+  public static readonly viewType = `${extensionName}.quickSettingPanel`;
 
   public _view: vsCodeTypes.WebviewView | undefined;
   private _extensionUri: vsCodeTypes.Uri;
@@ -22,7 +23,7 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCod
     this._extensionUri = extensionUri;
     this._workspaceUri = workspaceUri;
     this._settings = vscodeSettings;
-    this._vscode.workspace.onDidChangeConfiguration(_event => {
+    this._vscode.workspace.onDidChangeConfiguration((_event) => {
       this._updateSettings();
     });
   }
@@ -72,8 +73,12 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCod
 }
 
 function htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Uri, webview: vsCodeTypes.Webview) {
-  const styleURI = webview.asWebviewUri(vscode.Uri.joinPath(extensionURI, 'media', 'quickSettingPanel.css'));
-  const scriptURI = webview.asWebviewUri(vscode.Uri.joinPath(extensionURI, 'media', 'quickSettingPanel.js'));
+  const styleURI = webview.asWebviewUri(
+    vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.css')
+  );
+  const scriptURI = webview.asWebviewUri(
+    vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.js')
+  );
 
   const nonce = getNonce();
 
@@ -86,7 +91,7 @@ function htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Ur
           content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleURI}" rel="stylesheet">
-        <title>Nightwatch</title>
+        <title>Nightwatch Quick Settings</title>
       </head>
 
       <body>

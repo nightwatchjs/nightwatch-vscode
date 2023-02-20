@@ -209,6 +209,11 @@
 					"type": "webview",
 					"id": "com.nightwatch.nightwatchExt.quickSettingPanel",
 					"name": "Nightwatch Quick Settings"
+				},
+				{
+					"type": "webview",
+					"id": "com.nightwatch.nightwatchExt.environmentPanel",
+					"name": "Nightwatch Environments"
 				}
 			]
 		}

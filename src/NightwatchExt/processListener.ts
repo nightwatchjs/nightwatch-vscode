@@ -226,6 +226,7 @@ export class ListTestFileListener extends AbstractProcessListener {
 
     try {
       // TODO: Handle empty string
+      // [...new Set(Object.values(t).flat(1))];
       const testFileList: string[] = JSON5.parse(this.buffer.toString()).default;
       if (!testFileList || testFileList.length === 0) {
         // no test file is probably all right

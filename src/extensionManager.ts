@@ -1,4 +1,5 @@
-import { QuickSettingPanel } from './quickSettingPanel';
+import { EnvironmentsPanel } from './Panels/environmentsPanel';
+import { QuickSettingPanel } from './Panels/quickSettingPanel';
 import * as vsCodeTypes from './types/vscodeTypes';
 
 import { NightwatchExt } from './NightwatchExt';
@@ -35,7 +36,7 @@ export class ExtensionManager {
     });
   }
 
-  register(workspaceFolder: vsCodeTypes.WorkspaceFolder): void {
+  async register(workspaceFolder: vsCodeTypes.WorkspaceFolder): Promise<void> {
     const nightwatchExt = new NightwatchExt(
       this._vscode,
       this.context,
@@ -44,7 +45,14 @@ export class ExtensionManager {
       this.context
     );
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
+    // updating workspace state
+    // TODO: change to get NW Config dynamically
+    const nwConfig = require('../sandbox/nightwatch.conf.js');
+    const workspaceState = this.context.workspaceState;
+    workspaceState.update('nwConfig', nwConfig);
+
     this._vscode.window.registerWebviewViewProvider(QuickSettingPanel.viewType, nightwatchExt.quickSettingPanel);
+    this._vscode.window.registerWebviewViewProvider(EnvironmentsPanel.viewType, nightwatchExt.environmentsPanel);
     nightwatchExt.startSession();
   }
 

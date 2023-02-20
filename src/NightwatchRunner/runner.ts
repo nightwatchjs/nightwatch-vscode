@@ -1,6 +1,6 @@
 import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
-import { existsSync, readFile } from 'fs';
+import { readFile } from 'fs';
 import { tmpdir } from 'os';
 import path, { join } from 'path';
 import { Logging, LoggingFactory } from '../Logging/types';

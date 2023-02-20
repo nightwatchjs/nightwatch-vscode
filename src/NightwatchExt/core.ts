@@ -1,4 +1,5 @@
-import { QuickSettingPanel } from './../quickSettingPanel';
+import { EnvironmentsPanel } from './../Panels/environmentsPanel';
+import { QuickSettingPanel } from '../Panels/quickSettingPanel';
 import { DebugTestIdentifier } from './../TestProvider/types';
 import { OutputChannel, workspace } from 'vscode';
 import { Logging } from '../Logging/types';
@@ -43,6 +44,7 @@ export class NightwatchExt {
   private failDiagnostics: vsCodeTypes.DiagnosticCollection;
   public quickSettingPanel: QuickSettingPanel;
   public vsCodeSettings: Settings;
+  public environmentsPanel: EnvironmentsPanel;
 
   constructor(
     private _vscode: vsCodeTypes.VSCode,
@@ -59,6 +61,13 @@ export class NightwatchExt {
       vscode,
       context.extensionUri,
       workspaceFolder.uri,
+      this.vsCodeSettings
+    );
+    this.environmentsPanel = new EnvironmentsPanel(
+      vscode,
+      context.extensionUri,
+      workspaceFolder.uri,
+      this.context,
       this.vsCodeSettings
     );
     this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);

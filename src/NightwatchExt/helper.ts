@@ -14,7 +14,7 @@ export const getExtensionResourceSettings = (
 
   return {
     nightwatchCommandLine: config.get<string>('settings.nightwatchCommandLine'),
-    shell: config.get<string>('shell'),
+    shell: config.get<string>('settings.shell'),
     showTerminalOnLaunch: config.get<boolean>('settings.showTerminalOnLaunch'),
     testPath: path.join(uri.fsPath, config.get<string>('settings.testPath')!),
     nodeEnv: config.get<NodeEnv | null>('settings.nodeEnv') ?? undefined,
