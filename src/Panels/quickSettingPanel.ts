@@ -52,7 +52,7 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCod
     webviewView.webview.html = htmlForWebview(this._vscode, this._extensionUri, webviewView.webview);
     webviewView.webview.onDidReceiveMessage((data) => {
       if (data.method === 'toggle') {
-        this._vscode.commands.executeCommand(`com.nightwatch.nightwatchExt.${data.params.command}`);
+        this._vscode.commands.executeCommand(`${extensionName}.${data.params.command}`);
       }
       if (data.method === 'change') {
         this._settings.set<number>(`quickSettings.${data.params.command}`, +data.params.value);

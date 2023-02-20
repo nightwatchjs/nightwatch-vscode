@@ -59,6 +59,10 @@ export default class Runner extends EventEmitter {
       args.push('--headless');
     }
 
+    if (this._settings.environments && this._settings.environments.length > 0) {
+      args.push('--env', this._settings.environments.join(','));
+    }
+
     args.push('--parallel', this._settings.parallels!.toString());
 
     if (this.options.args && this.options.args.replace) {

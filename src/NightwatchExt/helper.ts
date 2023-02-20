@@ -22,6 +22,7 @@ export const getExtensionResourceSettings = (
     openReport: config.get<boolean>('quickSettings.openReport'),
     headlessMode: config.get<boolean>('quickSettings.headlessMode'),
     parallels: config.get<number>('quickSettings.parallels'),
+    environments: config.get<string[]>('quickSettings.environments')
   };
 };
 
@@ -88,4 +89,8 @@ export function cleanAnsi(str: string): string {
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
     ''
   );
+}
+
+export function getUniqueTestsList(obj: Record<string, string[]>): string[] {
+  return [...new Set(Object.values(obj).flat(1))] as string[];
 }

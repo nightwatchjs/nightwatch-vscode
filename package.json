@@ -168,6 +168,12 @@
 					"type": "number",
 					"default": 2,
 					"scope": "resource"
+				},
+				"nightwatch.quickSettings.environments": {
+					"description": "Environments list to run nightwatch tests",
+					"type": "array",
+					"default": [],
+					"scope": "resource"
 				}
 			}
 		},

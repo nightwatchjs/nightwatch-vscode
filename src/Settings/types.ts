@@ -11,4 +11,5 @@ export interface NightwatchExtensionResourceSettings {
   headlessMode?: boolean;
   openReport?: boolean;
   parallels?: number;
+  environments?: string[];
 }

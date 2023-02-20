@@ -51,13 +51,35 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
     };
 
     webviewView.webview.html = this._htmlForWebview(this._vscode, this._extensionUri, webviewView.webview);
-    this._updateNwEnvironments();
+    this._addNwEnvironments();
 
+    webviewView.webview.onDidReceiveMessage((data) => {
+      if (data.method === 'environment-select') {
+        let envList = this._settings.get<string[]>(`quickSettings.environments`);
+        if (data.params.state) {
+          envList.push(data.params.environment);
+        } else {
+          envList = envList.filter((env) => env!== data.params.environment);
+        }
+        this._settings.set<string[]>(`quickSettings.environments`, [...new Set(envList)]);
+      }
+    });
+    this._vscode.workspace.onDidChangeConfiguration((_event) => {
+      this._updateNwEnvironments();
+    });
+    this._updateNwEnvironments();
   }
 
-  private _updateNwEnvironments() {
+  private _updateNwEnvironments() {  
     return this._view?.webview.postMessage({
-      method: 'environments',
+      method: 'update-environments',
+      params: { environments: this._settings.json('quickSettings').environments },
+    });
+  }
+
+  private _addNwEnvironments() {
+    return this._view?.webview.postMessage({
+      method: 'add-environments',
       params: { environments: this.getNwEnvironments() },
     });
   }
@@ -90,17 +112,7 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
       </head>
 
       <body>
-        <section>
-          <article>
-            <h1>Hello Worlds</h1>
-          </article>
-
-          <!-- <article>
-            <label for="open-report">Open Report</label>
-            <input type="checkbox" name="openReport" id="open-report">
-          </article> -->
-
-        </section>
+        <section id="environment-section"></section>
 
         <script nonce="${nonce}" src="${scriptURI}"></script>
       </body>
