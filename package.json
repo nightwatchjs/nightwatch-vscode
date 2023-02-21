@@ -43,11 +43,7 @@
 		"workspaceContains:**/nightwatch.conf.cjs",
 		"workspaceContains:**/nightwatch.conf.ts",
 		"workspaceContains:**/nightwatch.json",
-		"workspaceContains:node_modules/.bin/nightwatch",
-		"onCommand:com.nightwatch.nightwatchExt.install-nightwatch",
-		"onCommand:com.nightwatch.nightwatchExt.run-test",
-		"onCommand:com.nightwatch.nightwatchExt.debug-test",
-		"onCommand:com.nightwatch.nightwatchExt.run-all-test"
+		"workspaceContains:node_modules/.bin/nightwatch"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -228,10 +224,11 @@
 		"vscode:prepublish": "npm run compile",
 		"compile-tests": "tsc -p . --outDir out",
 		"watch-tests": "tsc -p . -w --outDir out",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"compile": "tsup ./src/extension.ts --external vscode --minify",
+		"watch": "tsup ./src/extension.ts --external vscode --watch --sourcemap",
 		"pretest": "npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
@@ -246,6 +243,7 @@
 		"eslint": "^8.34.0",
 		"glob": "^8.1.0",
 		"mocha": "^10.2.0",
+		"tsup": "^6.6.3",
 		"typescript": "4.9.5",
 		"vscode-nls": "^5.2.0",
 		"vscode-nls-dev": "^4.0.3"
