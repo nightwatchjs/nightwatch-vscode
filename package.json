@@ -166,7 +166,7 @@
 				"nightwatch.quickSettings.parallels": {
 					"description": "Specifies number of parallels nightwatch uses to spawn tests",
 					"type": "number",
-					"default": 2,
+					"default": 0,
 					"scope": "resource"
 				},
 				"nightwatch.quickSettings.environments": {

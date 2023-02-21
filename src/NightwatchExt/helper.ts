@@ -1,3 +1,4 @@
+import { Settings } from './../Settings';
 import path from 'path';
 import { nodeBinExtension, pathToNightwatchCommandLine } from '../helpers';
 import { workspaceLogging } from '../Logging';
@@ -29,11 +30,16 @@ export const getExtensionResourceSettings = (
 export const createNightwatchExtContext = (
   vscode: vsCodeTypes.VSCode,
   workspaceFolder: vsCodeTypes.WorkspaceFolder,
-  settings: NightwatchExtensionResourceSettings
+  settings: NightwatchExtensionResourceSettings,
+  nightwatchSettings: Settings
 ): NightwatchExtContext => {
   const createRunnerWorkspace = async () => {
     const workspaceFolderName = workspaceFolder.name;
-    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(vscode, settings, workspaceFolder);
+    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(
+      vscode,
+      settings,
+      workspaceFolder
+    );
     return new ProjectWorkspace(
       settings.testPath ?? '',
       pathToConfig,
@@ -50,6 +56,7 @@ export const createNightwatchExtContext = (
     createRunnerWorkspace,
     loggingFactory: workspaceLogging(workspaceFolder.name, settings.debugMode ?? false),
     settings,
+    nightwatchSettings
   };
 };
 

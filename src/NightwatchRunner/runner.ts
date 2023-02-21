@@ -4,7 +4,7 @@ import { readFile } from 'fs';
 import { tmpdir } from 'os';
 import path, { join } from 'path';
 import { Logging, LoggingFactory } from '../Logging/types';
-import { NightwatchExtensionResourceSettings } from '../Settings';
+import { NightwatchExtensionResourceSettings, Settings } from '../Settings';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
 import { Options, OutputType, RunnerEvent } from './types';
@@ -33,12 +33,14 @@ export default class Runner extends EventEmitter {
   _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
   _exited: boolean;
   private _settings: NightwatchExtensionResourceSettings;
+  private _nightwatchSettings: Settings;
 
   constructor(
     workspace: ProjectWorkspace,
     logger: LoggingFactory,
     settings: NightwatchExtensionResourceSettings,
-    options?: Options,
+    nightwatchSettings: Settings,
+    options?: Options
   ) {
     super();
 
@@ -49,29 +51,37 @@ export default class Runner extends EventEmitter {
     this._exited = false;
     this.logging = logger.create('Runner');
     this._settings = settings;
+    this._nightwatchSettings = nightwatchSettings;
   }
 
   getArgs(): string[] {
     const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
+    const headlessMode = this._nightwatchSettings.get<boolean>(`quickSettings.headlessMode`);
+    const openReport = this._nightwatchSettings.get<boolean>(`quickSettings.openReport`);
+    const environments = this._nightwatchSettings.get<string[]>(`quickSettings.environments`);
+    const parallels = this._nightwatchSettings.get<number>(`quickSettings.parallels`);
+
     this.logging('debug', `JSON output location: ${this.outputPath}`);
 
-    if (this._settings.headlessMode) {
+    if (headlessMode) {
       args.push('--headless');
     }
 
-    if (this._settings.environments && this._settings.environments.length > 0) {
-      args.push('--env', this._settings.environments.join(','));
+    if (openReport) {
+      args.push('--open');
     }
 
-    args.push('--parallel', this._settings.parallels!.toString());
-
-    if (this.options.args && this.options.args.replace) {
-      this.options.args.args.push(...args);
-      return this.options.args.args;
+    if (environments.length > 0) {
+      args.push('--env', environments.join(','));
     }
 
-    if (this.options.env) {
-      args.unshift(`-e`, this.options.env);
+    args.push('--parallel', parallels.toString());
+
+    if (this.options.args) {
+      if (this.options.args.replace) {
+        return this.options.args.args;
+      }
+      return [...this.options.args.args, ...args];
     }
 
     return args;

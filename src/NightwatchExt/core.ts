@@ -1,7 +1,7 @@
 import { EnvironmentsPanel } from './../Panels/environmentsPanel';
 import { QuickSettingPanel } from '../Panels/quickSettingPanel';
 import { DebugTestIdentifier } from './../TestProvider/types';
-import { OutputChannel, workspace } from 'vscode';
+import { OutputChannel } from 'vscode';
 import { Logging } from '../Logging/types';
 import * as messaging from '../messaging';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
@@ -43,7 +43,7 @@ export class NightwatchExt {
   // The ability to show fails in the problems section
   private failDiagnostics: vsCodeTypes.DiagnosticCollection;
   public quickSettingPanel: QuickSettingPanel;
-  public vsCodeSettings: Settings;
+  public nightwatchSettings: Settings;
   public environmentsPanel: EnvironmentsPanel;
 
   constructor(
@@ -56,21 +56,21 @@ export class NightwatchExt {
     vscode = _vscode;
     this.vscodeContext = vscodeContext;
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
-    this.vsCodeSettings = new Settings(this._vscode, workspaceFolder.uri);
+    this.nightwatchSettings = new Settings(this._vscode, workspaceFolder.uri);
     this.quickSettingPanel = new QuickSettingPanel(
       vscode,
       context.extensionUri,
       workspaceFolder.uri,
-      this.vsCodeSettings
+      this.nightwatchSettings
     );
     this.environmentsPanel = new EnvironmentsPanel(
       vscode,
       context.extensionUri,
       workspaceFolder.uri,
       this.context,
-      this.vsCodeSettings
+      this.nightwatchSettings
     );
-    this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);
+    this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings, this.nightwatchSettings);
     this.debugConfigurationProvider = debugConfigurationProvider;
     this.failDiagnostics = vscode.languages.createDiagnosticCollection(`Nightwatch (${workspaceFolder.name})`);
     this.logging = this.extContext.loggingFactory.create('NightwatchExt');
@@ -98,12 +98,12 @@ export class NightwatchExt {
   }
 
   public updateConfig<T>(configName: string, value: T) {
-    this.vsCodeSettings.set<T>(configName, value);
+    this.nightwatchSettings.set<T>(configName, value);
   }
 
   public getConfig<T>(configName: string) {
-    this.vsCodeSettings.json('quickSettings');
-    return this.vsCodeSettings.get<T>(configName);
+    this.nightwatchSettings.json('quickSettings');
+    return this.nightwatchSettings.get<T>(configName);
   }
 
   public activate(): void {
@@ -259,7 +259,7 @@ export class NightwatchExt {
   public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
     const updatedSettings = newSettings ?? getExtensionResourceSettings(vscode, this.extContext.workspace.uri);
 
-    this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings);
+    this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings, this.nightwatchSettings);
     this.processSession = this.createProcessSession();
     this.updateTestFileList();
     return this.startSession();

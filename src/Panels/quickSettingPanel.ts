@@ -4,25 +4,25 @@ import os from 'os';
 import { Settings } from '../Settings';
 import { extensionName } from '../appGlobals';
 
-export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCodeTypes.Disposable {
+export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
   public static readonly viewType = `${extensionName}.quickSettingPanel`;
 
   public _view: vsCodeTypes.WebviewView | undefined;
   private _extensionUri: vsCodeTypes.Uri;
   private _vscode: vsCodeTypes.VSCode;
   private _workspaceUri: vsCodeTypes.Uri;
-  private _settings: Settings;
+  private _nightwatchSettings: Settings;
 
   constructor(
     vscode: vsCodeTypes.VSCode,
     extensionUri: vsCodeTypes.Uri,
     workspaceUri: vsCodeTypes.Uri,
-    vscodeSettings: Settings
+    nightwatchSettings: Settings
   ) {
     this._vscode = vscode;
     this._extensionUri = extensionUri;
     this._workspaceUri = workspaceUri;
-    this._settings = vscodeSettings;
+    this._nightwatchSettings = nightwatchSettings;
     this._vscode.workspace.onDidChangeConfiguration((_event) => {
       this._updateSettings();
     });
@@ -30,7 +30,8 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCod
 
   public async changeConfig() {
     const config = this._vscode.workspace.getConfiguration('nightwatch', this._workspaceUri);
-    await config.update('quickSettings.parallels', os.cpus().length, true);
+    const parallels = this._nightwatchSettings.get<number>(`quickSettings.parallels`);
+    await config.update('quickSettings.parallels', parallels === 0 ? os.cpus().length : parallels, true);
   }
 
   public getWebview() {
@@ -49,13 +50,13 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCod
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = htmlForWebview(this._vscode, this._extensionUri, webviewView.webview);
+    webviewView.webview.html = this._htmlForWebview(this._vscode, this._extensionUri, webviewView.webview);
     webviewView.webview.onDidReceiveMessage((data) => {
       if (data.method === 'toggle') {
         this._vscode.commands.executeCommand(`${extensionName}.${data.params.command}`);
       }
       if (data.method === 'change') {
-        this._settings.set<number>(`quickSettings.${data.params.command}`, +data.params.value);
+        this._nightwatchSettings.set<number>(`quickSettings.${data.params.command}`, +data.params.value);
       }
     });
 
@@ -65,24 +66,21 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider, vsCod
   private _updateSettings() {
     return this._view?.webview.postMessage({
       method: 'settings',
-      params: { settings: this._settings.json('quickSettings') },
+      params: { settings: this._nightwatchSettings.json('quickSettings') },
     });
   }
 
-  public dispose() {}
-}
+  private _htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Uri, webview: vsCodeTypes.Webview) {
+    const styleURI = webview.asWebviewUri(
+      vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.css')
+    );
+    const scriptURI = webview.asWebviewUri(
+      vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.js')
+    );
 
-function htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Uri, webview: vsCodeTypes.Webview) {
-  const styleURI = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.css')
-  );
-  const scriptURI = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.js')
-  );
+    const nonce = getNonce();
 
-  const nonce = getNonce();
-
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
       <html lang="en">
 
       <head>
@@ -117,7 +115,8 @@ function htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Ur
       </body>
 
       </html>
-`;
+    `;
+  }
 }
 
 function getNonce() {
