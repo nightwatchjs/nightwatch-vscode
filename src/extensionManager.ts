@@ -56,7 +56,7 @@ export class ExtensionManager {
     this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((res) => {
       const nwConfig = res[0].path;
       const workspaceState = this.context.workspaceState;
-      workspaceState.update('nwConfig', nwConfig);
+      workspaceState.update('nwConfig', require(nwConfig));
     });
 
     this._vscode.window.registerWebviewViewProvider(
