@@ -3,6 +3,7 @@ import * as vsCodeTypes from '../types/vscodeTypes';
 import os from 'os';
 import { Settings } from '../Settings';
 import { extensionName } from '../appGlobals';
+import { getNonce } from './utils';
 
 export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
   public static readonly viewType = `${extensionName}.quickSettingPanel`;
@@ -117,13 +118,4 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
       </html>
     `;
   }
-}
-
-function getNonce() {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
 }

@@ -2,6 +2,7 @@ import { WebviewViewResolveContext } from 'vscode';
 import { extensionName } from '../appGlobals';
 import { Settings } from '../Settings';
 import * as vsCodeTypes from '../types/vscodeTypes';
+import { getNonce } from './utils';
 
 export interface NwConfig {
   src_folders?: string[] | null;
@@ -120,13 +121,4 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
       </html>
     `;
   }
-}
-
-function getNonce() {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
 }
