@@ -55,14 +55,8 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
     this._addNwEnvironments();
 
     webviewView.webview.onDidReceiveMessage((data) => {
-      if (data.method === 'environment-select') {
-        let envList = this._settings.get<string[]>(`quickSettings.environments`);
-        if (data.params.state) {
-          envList.push(data.params.environment);
-        } else {
-          envList = envList.filter((env) => env!== data.params.environment);
-        }
-        this._settings.set<string[]>(`quickSettings.environments`, [...new Set(envList)]);
+      if (data.method === 'environment-select' && data.params.state) {
+        this._settings.set<string>(`quickSettings.environments`, data.params.environment);
       }
     });
     this._vscode.workspace.onDidChangeConfiguration((_event) => {
@@ -73,7 +67,7 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
 
   private _updateNwEnvironments() {  
     return this._view?.webview.postMessage({
-      method: 'update-environments',
+      method: 'update-selected-environments',
       params: { environments: this._settings.json('quickSettings').environments },
     });
   }

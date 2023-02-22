@@ -167,8 +167,8 @@
 				},
 				"nightwatch.quickSettings.environments": {
 					"description": "Environments list to run nightwatch tests",
-					"type": "array",
-					"default": [],
+					"type": "string",
+					"default": "",
 					"scope": "resource"
 				}
 			}

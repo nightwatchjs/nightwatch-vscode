@@ -15,17 +15,18 @@
         labelelement.textContent = environment;
 
         const inputElement = document.createElement('input');
-        inputElement.type = 'checkbox';
-        inputElement.name = environment;
+        inputElement.type = 'radio';
+        inputElement.name = 'environment';
+        inputElement.setAttribute('envName', environment);
 
         articleElement.appendChild(labelelement);
         articleElement.appendChild(inputElement);
         environmentSection.appendChild(articleElement);
       });
 
-      for (const input of document.querySelectorAll('input[type=checkbox]')) {
+      for (const input of document.querySelectorAll('input[type=radio]')) {
         input.addEventListener('change', (event) => {
-          const environmentName = event.target.getAttribute('name');
+          const environmentName = event.target.getAttribute('envName');
           vscode.postMessage({
             method: 'environment-select',
             params: { environment: environmentName, state: event.target.checked },
@@ -33,9 +34,9 @@
         });
       }
     }
-    if (method === 'update-environments') {
-      for (const input of document.querySelectorAll('input[type=checkbox]')) {
-        const envName = input.getAttribute('name');
+    if (method === 'update-selected-environments') {
+      for (const input of document.querySelectorAll('input[type=radio]')) {
+        const envName = input.getAttribute('envName');
         if (params.environments.includes(envName)) {
           input.checked = true;
         }

@@ -23,7 +23,7 @@ export const getExtensionResourceSettings = (
     openReport: config.get<boolean>('quickSettings.openReport'),
     headlessMode: config.get<boolean>('quickSettings.headlessMode'),
     parallels: config.get<number>('quickSettings.parallels'),
-    environments: config.get<string[]>('quickSettings.environments')
+    environments: config.get<string>('quickSettings.environments')
   };
 };
 

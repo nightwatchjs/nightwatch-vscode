@@ -58,7 +58,7 @@ export default class Runner extends EventEmitter {
     const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
     const headlessMode = this._nightwatchSettings.get<boolean>(`quickSettings.headlessMode`);
     const openReport = this._nightwatchSettings.get<boolean>(`quickSettings.openReport`);
-    const environments = this._nightwatchSettings.get<string[]>(`quickSettings.environments`);
+    const environment = this._nightwatchSettings.get<string>(`quickSettings.environments`);
     const parallels = this._nightwatchSettings.get<number>(`quickSettings.parallels`);
 
     this.logging('debug', `JSON output location: ${this.outputPath}`);
@@ -71,8 +71,8 @@ export default class Runner extends EventEmitter {
       args.push('--open');
     }
 
-    if (environments.length > 0) {
-      args.push('--env', environments.join(','));
+    if (environment.length > 0) {
+      args.push('--env', environment);
     }
 
     args.push('--parallel', parallels.toString());
