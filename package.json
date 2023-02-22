@@ -222,10 +222,8 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"compile-tests": "tsc -p . --outDir out",
-		"watch-tests": "tsc -p . -w --outDir out",
-		"compile": "tsup ./src/extension.ts --external vscode --minify",
-		"watch": "tsup ./src/extension.ts --external vscode --watch --sourcemap",
+		"compile": "tsup ./src/extension.ts ./src/reporter.ts --external vscode --minify",
+		"watch": "tsup ./src/extension.ts ./src/reporter.ts --external vscode --watch --sourcemap",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",

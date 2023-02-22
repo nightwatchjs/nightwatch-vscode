@@ -17,7 +17,6 @@
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"internalConsoleOptions": "openOnSessionStart",
-			"preLaunchTask": "${defaultBuildTask}",
 			"skipFiles": [
 				"<node_internals>/**",
 				"/Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js",
