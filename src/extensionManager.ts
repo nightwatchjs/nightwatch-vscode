@@ -18,6 +18,7 @@ export class ExtensionManager {
   private debugConfigurationProvider: DebugConfigurationProvider;
 
   private extByWorkspace: Map<string, NightwatchExt> = new Map();
+  private nwConfPath!: string;
 
   constructor(vscode: vsCodeTypes.VSCode, context: vsCodeTypes.ExtensionContext) {
     this._vscode = vscode;
@@ -223,10 +224,13 @@ export class ExtensionManager {
       new vscode.RelativePattern(wsFolder, '**/*nightwatch*.conf.{ts,js,cjs}')
     );
 
-    watcher.onDidChange((_uri) => {
+    watcher.onDidChange((uri) => {
+      this.nwConfPath = uri.path;
       vscode.workspace.workspaceFolders?.forEach((ws) => {
         const ext = this.extByWorkspace.get(ws.name);
         if (ext) {
+          delete require.cache[require.resolve(this.nwConfPath)];
+          ext.updateEnvironmentPanel();
           ext.updateTestFileList();
         }
       });

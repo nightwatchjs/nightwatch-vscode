@@ -6,6 +6,7 @@
   window.addEventListener('message', (event) => {
     const { method, params } = event.data;
     if (method === 'add-environments') {
+      environmentSection.innerHTML = '';
       const envList = params.environments;
 
       envList.forEach((environment) => {

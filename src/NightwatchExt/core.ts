@@ -70,7 +70,12 @@ export class NightwatchExt {
       this.context,
       this.nightwatchSettings
     );
-    this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings, this.nightwatchSettings);
+    this.extContext = createNightwatchExtContext(
+      vscode,
+      workspaceFolder,
+      getNightwatchExtensionSettings,
+      this.nightwatchSettings
+    );
     this.debugConfigurationProvider = debugConfigurationProvider;
     this.failDiagnostics = vscode.languages.createDiagnosticCollection(`Nightwatch (${workspaceFolder.name})`);
     this.logging = this.extContext.loggingFactory.create('NightwatchExt');
@@ -259,7 +264,12 @@ export class NightwatchExt {
   public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
     const updatedSettings = newSettings ?? getExtensionResourceSettings(vscode, this.extContext.workspace.uri);
 
-    this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings, this.nightwatchSettings);
+    this.extContext = createNightwatchExtContext(
+      vscode,
+      this.extContext.workspace,
+      updatedSettings,
+      this.nightwatchSettings
+    );
     this.processSession = this.createProcessSession();
     this.updateTestFileList();
     return this.startSession();
@@ -319,6 +329,15 @@ export class NightwatchExt {
     }
 
     updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
+  }
+
+  public updateEnvironmentPanel() {
+    this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then(async (res) => {
+      const nwConfig = require(res[0].path);
+      const workspaceState = this.context.workspaceState;
+      workspaceState.update('nwConfig', nwConfig);
+      this.environmentsPanel._addNwEnvironments();
+    });
   }
 
   public updateTestFileList(): void {

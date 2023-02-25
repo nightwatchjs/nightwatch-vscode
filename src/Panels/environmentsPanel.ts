@@ -72,7 +72,7 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
     });
   }
 
-  private _addNwEnvironments() {
+  public _addNwEnvironments() {
     return this._view?.webview.postMessage({
       method: 'add-environments',
       params: { environments: this.getNwEnvironments() },
