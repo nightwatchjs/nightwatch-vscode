@@ -1,3 +1,4 @@
+import * as vsCodeTypes from '../types/vscodeTypes';
 import Runner from '../NightwatchRunner/runner';
 import { RunnerEvent } from '../NightwatchRunner/types';
 import { NightwatchProcess } from './nightwatchProcess';
@@ -70,9 +71,17 @@ export type NightwatchProcessRequestSimple =
   | {
     type: Extract<NightwatchProcessType, 'not-test'>,
     args: string[]
-    };
+  };
 
-export type NightwatchProcessRequest = NightwatchProcessRequestSimple & NightwatchProcessRequestCommon;
+export type VsCodeItemRun = {
+  itemRun: {
+    run: {
+      token: vsCodeTypes.CancellationToken;
+    };
+  };
+};
+
+export type NightwatchProcessRequest = NightwatchProcessRequestSimple & NightwatchProcessRequestCommon & VsCodeItemRun;
 
 export interface NightwatchProcessInfo {
   readonly id: string;

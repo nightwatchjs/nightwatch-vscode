@@ -65,7 +65,7 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
     this._updateNwEnvironments();
   }
 
-  private _updateNwEnvironments() {  
+  public _updateNwEnvironments() {  
     return this._view?.webview.postMessage({
       method: 'update-selected-environments',
       params: { environments: this._settings.json('quickSettings').environments },

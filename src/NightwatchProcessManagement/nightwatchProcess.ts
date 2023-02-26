@@ -86,6 +86,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
       this.extContext.loggingFactory,
       this.extContext.settings,
       this.extContext.nightwatchSettings,
+      this.request.itemRun?.run.token,
       options
     );
 

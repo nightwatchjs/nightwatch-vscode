@@ -8,6 +8,7 @@ import { NightwatchExtensionResourceSettings, Settings } from '../Settings';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
 import { Options, OutputType, RunnerEvent } from './types';
+import * as vsCodeTypes from '../types/vscodeTypes';
 
 export const runnerEvents: RunnerEvent[] = [
   'executableOutput',
@@ -34,12 +35,14 @@ export default class Runner extends EventEmitter {
   _exited: boolean;
   private _settings: NightwatchExtensionResourceSettings;
   private _nightwatchSettings: Settings;
+  private _token: vsCodeTypes.CancellationToken;
 
   constructor(
     workspace: ProjectWorkspace,
     logger: LoggingFactory,
     settings: NightwatchExtensionResourceSettings,
     nightwatchSettings: Settings,
+    token: vsCodeTypes.CancellationToken,
     options?: Options
   ) {
     super();
@@ -52,6 +55,7 @@ export default class Runner extends EventEmitter {
     this.logging = logger.create('Runner');
     this._settings = settings;
     this._nightwatchSettings = nightwatchSettings;
+    this._token = token;
   }
 
   getArgs(): string[] {
@@ -94,6 +98,11 @@ export default class Runner extends EventEmitter {
 
     const args = this.getArgs();
     this.childProcess = this._createProcess(this.workspace, args, this.logging);
+
+    this._token?.onCancellationRequested(()=> this.childProcess?.kill('SIGTERM'));
+    if (this._token?.isCancellationRequested) {
+      this.childProcess?.kill('SIGTERM');
+    }
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
     this.childProcess.stdout!.on('data', (data: Buffer) => {
