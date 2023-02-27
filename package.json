@@ -251,6 +251,7 @@
 		"json5": "^2.2.3",
 		"nightwatch": "^2.6.14",
 		"stacktrace-parser": "^0.1.10",
+		"tree-kill": "^1.2.2",
 		"which": "^3.0.0"
 	}
 }

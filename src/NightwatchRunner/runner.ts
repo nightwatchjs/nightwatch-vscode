@@ -9,6 +9,7 @@ import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
 import { Options, OutputType, RunnerEvent } from './types';
 import * as vsCodeTypes from '../types/vscodeTypes';
+import kill from "tree-kill";
 
 export const runnerEvents: RunnerEvent[] = [
   'executableOutput',
@@ -99,9 +100,15 @@ export default class Runner extends EventEmitter {
     const args = this.getArgs();
     this.childProcess = this._createProcess(this.workspace, args, this.logging);
 
-    this._token?.onCancellationRequested(()=> this.childProcess?.kill('SIGTERM'));
+    this._token?.onCancellationRequested(() => {
+      if (this.childProcess) {
+        kill(this.childProcess.pid!);
+      }
+    });
     if (this._token?.isCancellationRequested) {
-      this.childProcess?.kill('SIGTERM');
+      if (this.childProcess) {
+        kill(this.childProcess.pid!);
+      };
     }
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
