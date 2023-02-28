@@ -6,17 +6,6 @@ module.exports = {
     const adopted = Object.assign({}, results);
     adopted.status = adopted.failed === 0 && adopted.errors === 0 ? "pass": "fail";
 
-    Object.keys(results.modules).forEach((module) => {
-      adopted['modules'][module].status =
-        adopted['modules'][module].failedCount === 0 && adopted['modules'][module].errorsCount === 0 ? "pass" : "fail";
-
-      Object.keys(results['modules'][module].completed).forEach((testcase) => {
-        adopted['modules'][module]['completed'][testcase].status =
-          adopted['modules'][module]['completed'][testcase].failed === 0 &&
-          adopted['modules'][module]['completed'][testcase].errors === 0 ? "pass": "fail";
-      });
-    });
-
     const jsonBlob = JSON.stringify(adopted);
     const reportPath = join(options.output_folder, 'report.json');
     writeFile(reportPath, jsonBlob, err => {
