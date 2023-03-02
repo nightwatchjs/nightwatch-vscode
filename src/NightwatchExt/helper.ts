@@ -75,7 +75,7 @@ const getNightwatchCommandAndConfig = async (
   }
 
   const possibleNightwatchCommandLine =
-    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) || 'nightwatch' + nodeBinExtension;
+    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) || 'npx nightwatch' + nodeBinExtension;
   return [possibleNightwatchCommandLine, nightwatchConfigFile ?? ''];
 };
 
