@@ -230,16 +230,16 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/glob": "^8.0.1",
+		"@types/glob": "^8.1.0",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "18.x",
 		"@types/vscode": "^1.68.0",
 		"@types/which": "^2.0.2",
-		"@typescript-eslint/eslint-plugin": "^5.52.0",
-		"@typescript-eslint/parser": "^5.52.0",
-		"@vscode/test-electron": "^2.2.3",
-		"eslint": "^8.34.0",
-		"glob": "^8.1.0",
+		"@typescript-eslint/eslint-plugin": "^5.54.0",
+		"@typescript-eslint/parser": "^5.54.0",
+		"@vscode/test-electron": "^2.3.0",
+		"eslint": "^8.35.0",
+		"glob": "^9.1.2",
 		"mocha": "^10.2.0",
 		"tsup": "^6.6.3",
 		"typescript": "4.9.5",
@@ -249,7 +249,7 @@
 	"dependencies": {
 		"jest-editor-support": "^31.0.1",
 		"json5": "^2.2.3",
-		"nightwatch": "^2.6.14",
+		"nightwatch": "^2.6.16",
 		"stacktrace-parser": "^0.1.10",
 		"tree-kill": "^1.2.2",
 		"which": "^3.0.0"
