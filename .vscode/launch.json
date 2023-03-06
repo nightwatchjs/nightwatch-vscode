@@ -13,6 +13,7 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"${workspaceFolder}/sandbox"
 			],
+			"preLaunchTask": "${defaultBuildTask}",
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js"
 			],

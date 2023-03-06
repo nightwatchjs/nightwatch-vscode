@@ -7,6 +7,9 @@ import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './Nightwatc
 import { extensionName } from './appGlobals';
 import { DebugConfigurationProvider } from './NightwatchExt/debugConfigurationProvider';
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __non_webpack_require__: typeof require;
+
 const commandPrefix: Record<CommandType, string> = {
   'all-workspaces': `${extensionName}`,
   'active-text-editor': `${extensionName}`,
@@ -54,10 +57,11 @@ export class ExtensionManager {
 
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
     // updating workspace state
-    this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((res) => {
-      const nwConfig = res[0].path;
+    await this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((res) => {
+      delete __non_webpack_require__.cache[__non_webpack_require__.resolve(res[0].path)];
+      const nwConfig = require(/* webpackIgnore: true */ res[0].path);
       const workspaceState = this.context.workspaceState;
-      workspaceState.update('nwConfig', require(nwConfig));
+      workspaceState.update('nwConfig', nwConfig);
     });
 
     this._vscode.window.registerWebviewViewProvider(
@@ -226,11 +230,10 @@ export class ExtensionManager {
 
     watcher.onDidChange((uri) => {
       this.nwConfPath = uri.path;
-      vscode.workspace.workspaceFolders?.forEach((ws) => {
+      vscode.workspace.workspaceFolders?.forEach(async (ws) => {
         const ext = this.extByWorkspace.get(ws.name);
         if (ext) {
-          delete require.cache[require.resolve(this.nwConfPath)];
-          ext.updateEnvironmentPanel();
+          await ext.updateEnvironmentPanel();
           ext.updateTestFileList();
         }
       });

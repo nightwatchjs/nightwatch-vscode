@@ -27,6 +27,9 @@ import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
 import { resetDiagnostics, updateCurrentDiagnostics, updateDiagnostics } from '../diagnostic';
 import { Settings } from '../Settings';
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __non_webpack_require__: typeof require;
+
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
   testResultProvider: TestResultProvider;
@@ -331,9 +334,10 @@ export class NightwatchExt {
     updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
   }
 
-  public updateEnvironmentPanel() {
-    this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then(async (res) => {
-      const nwConfig = require(res[0].path);
+  public async updateEnvironmentPanel() {
+    await this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then(async (res) => {
+      delete __non_webpack_require__.cache[__non_webpack_require__.resolve(res[0].path)];
+      const nwConfig = require(/* webpackIgnore: true */ res[0].path);
       const workspaceState = this.context.workspaceState;
       workspaceState.update('nwConfig', nwConfig);
       this.environmentsPanel._addNwEnvironments();

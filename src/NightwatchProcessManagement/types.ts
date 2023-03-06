@@ -74,7 +74,7 @@ export type NightwatchProcessRequestSimple =
   };
 
 export type VsCodeItemRun = {
-  itemRun: {
+  itemRun?: {
     run: {
       token: vsCodeTypes.CancellationToken;
     };

@@ -36,14 +36,14 @@ export default class Runner extends EventEmitter {
   _exited: boolean;
   private _settings: NightwatchExtensionResourceSettings;
   private _nightwatchSettings: Settings;
-  private _token: vsCodeTypes.CancellationToken;
+  private _token?: vsCodeTypes.CancellationToken;
 
   constructor(
     workspace: ProjectWorkspace,
     logger: LoggingFactory,
     settings: NightwatchExtensionResourceSettings,
     nightwatchSettings: Settings,
-    token: vsCodeTypes.CancellationToken,
+    token?: vsCodeTypes.CancellationToken,
     options?: Options
   ) {
     super();
