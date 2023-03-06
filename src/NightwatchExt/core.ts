@@ -45,19 +45,17 @@ export class NightwatchExt {
 
   // The ability to show fails in the problems section
   private failDiagnostics: vsCodeTypes.DiagnosticCollection;
-  public quickSettingPanel: QuickSettingPanel;
+  private quickSettingPanel: QuickSettingPanel;
   public nightwatchSettings: Settings;
   public environmentsPanel: EnvironmentsPanel;
 
   constructor(
     private _vscode: vsCodeTypes.VSCode,
-    private vscodeContext: vsCodeTypes.ExtensionContext,
     public workspaceFolder: vsCodeTypes.WorkspaceFolder,
     private debugConfigurationProvider: DebugConfigurationProvider,
     private context: vsCodeTypes.ExtensionContext
   ) {
     vscode = _vscode;
-    this.vscodeContext = vscodeContext;
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
     this.nightwatchSettings = new Settings(this._vscode, workspaceFolder.uri);
     this.quickSettingPanel = new QuickSettingPanel(
@@ -94,6 +92,24 @@ export class NightwatchExt {
       vscode,
       this.events,
       getNightwatchExtensionSettings.debugMode ?? false
+    );
+
+    const webviewOptions = {
+      webviewOptions: {
+        retainContextWhenHidden: true,
+      },
+    };
+
+    this._vscode.window.registerWebviewViewProvider(
+      QuickSettingPanel.viewType,
+      this.quickSettingPanel,
+      webviewOptions
+    );
+
+    this._vscode.window.registerWebviewViewProvider(
+      EnvironmentsPanel.viewType,
+      this.environmentsPanel,
+      webviewOptions
     );
 
     // reset the Nightwatch diagnostics
@@ -264,7 +280,7 @@ export class NightwatchExt {
     });
   }
 
-  public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
+  public async triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
     const updatedSettings = newSettings ?? getExtensionResourceSettings(vscode, this.extContext.workspace.uri);
 
     this.extContext = createNightwatchExtContext(

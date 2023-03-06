@@ -11,16 +11,16 @@
 
       envList.forEach((environment) => {
         const articleElement = document.createElement('article');
-        const labelelement = document.createElement('label');
-        labelelement.setAttribute('for', environment);
-        labelelement.textContent = environment;
+        const labelElement = document.createElement('label');
+        labelElement.setAttribute('for', environment);
+        labelElement.textContent = environment;
 
         const inputElement = document.createElement('input');
         inputElement.type = 'radio';
         inputElement.name = 'environment';
         inputElement.setAttribute('envName', environment);
 
-        articleElement.appendChild(labelelement);
+        articleElement.appendChild(labelElement);
         articleElement.appendChild(inputElement);
         environmentSection.appendChild(articleElement);
       });

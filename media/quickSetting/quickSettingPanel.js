@@ -2,10 +2,10 @@
   const vscode = acquireVsCodeApi();
 
   // Get all elements
-  const headlessElm = document.getElementById('headless-mode');
-  const parallelsElm = document.getElementById('parallels');
+  const headlessElement = document.getElementById('headless-mode');
+  const parallelsElement = document.getElementById('parallels');
   const parallelsElInput = document.querySelector('input[type=number]');
-  const openReportElm = document.getElementById('open-report');
+  const openReportElement = document.getElementById('open-report');
 
   for (const input of document.querySelectorAll('input[type=checkbox]')) {
     input.addEventListener('change', (event) => {
@@ -24,9 +24,9 @@
 
     if (method === 'settings') {
       const { headlessMode, parallels, openReport } = params.settings;
-      headlessElm.checked = headlessMode;
-      parallelsElm.value = parallels;
-      openReportElm.checked = openReport;
+      headlessElement.checked = headlessMode;
+      parallelsElement.value = parallels;
+      openReportElement.checked = openReport;
     }
   });
 })();

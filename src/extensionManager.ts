@@ -43,17 +43,10 @@ export class ExtensionManager {
   async register(workspaceFolder: vsCodeTypes.WorkspaceFolder): Promise<void> {
     const nightwatchExt = new NightwatchExt(
       this._vscode,
-      this.context,
       workspaceFolder,
       this.debugConfigurationProvider,
       this.context
     );
-
-    const webviewOptions = {
-      webviewOptions: {
-        retainContextWhenHidden: true,
-      }
-    };
 
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
     // updating workspace state
@@ -64,16 +57,6 @@ export class ExtensionManager {
       workspaceState.update('nwConfig', nwConfig);
     });
 
-    this._vscode.window.registerWebviewViewProvider(
-      QuickSettingPanel.viewType,
-      nightwatchExt.quickSettingPanel,
-      webviewOptions
-    );
-    this._vscode.window.registerWebviewViewProvider(
-      EnvironmentsPanel.viewType,
-      nightwatchExt.environmentsPanel,
-      webviewOptions
-    );
     nightwatchExt.startSession();
   }
 
