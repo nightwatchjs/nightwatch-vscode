@@ -33,10 +33,10 @@ export default class Runner extends EventEmitter {
   options: Options;
   outputPath: string;
   _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
-  _exited: boolean;
-  private _settings: NightwatchExtensionResourceSettings;
-  private _nightwatchSettings: Settings;
-  private _token?: vsCodeTypes.CancellationToken;
+  private exited: boolean;
+  private settings: NightwatchExtensionResourceSettings;
+  private nightwatchSettings: Settings;
+  private token?: vsCodeTypes.CancellationToken;
 
   constructor(
     workspace: ProjectWorkspace,
@@ -52,19 +52,19 @@ export default class Runner extends EventEmitter {
     this.workspace = workspace;
     this.options = options || { reporter: options!.reporter };
     this.outputPath = path.join(tmpdir(), `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`);
-    this._exited = false;
+    this.exited = false;
     this.logging = logger.create('Runner');
-    this._settings = settings;
-    this._nightwatchSettings = nightwatchSettings;
-    this._token = token;
+    this.settings = settings;
+    this.nightwatchSettings = nightwatchSettings;
+    this.token = token;
   }
 
   getArgs(): string[] {
     const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
-    const headlessMode = this._nightwatchSettings.get<boolean>(`quickSettings.headlessMode`);
-    const openReport = this._nightwatchSettings.get<boolean>(`quickSettings.openReport`);
-    const environment = this._nightwatchSettings.get<string>(`quickSettings.environments`);
-    const parallels = this._nightwatchSettings.get<number>(`quickSettings.parallels`);
+    const headlessMode = this.nightwatchSettings.get<boolean>(`quickSettings.headlessMode`);
+    const openReport = this.nightwatchSettings.get<boolean>(`quickSettings.openReport`);
+    const environment = this.nightwatchSettings.get<string>(`quickSettings.environments`);
+    const parallels = this.nightwatchSettings.get<number>(`quickSettings.parallels`);
 
     this.logging('debug', `JSON output location: ${this.outputPath}`);
 
@@ -83,10 +83,7 @@ export default class Runner extends EventEmitter {
     args.push('--parallel', parallels.toString());
 
     if (this.options.args) {
-      if (this.options.args.replace) {
-        return this.options.args.args;
-      }
-      return [...this.options.args.args, ...args];
+      return this.options.args.replace ? this.options.args.args : [...this.options.args.args, ...args];
     }
 
     return args;
@@ -100,12 +97,12 @@ export default class Runner extends EventEmitter {
     const args = this.getArgs();
     this.childProcess = this._createProcess(this.workspace, args, this.logging);
 
-    this._token?.onCancellationRequested(() => {
+    this.token?.onCancellationRequested(() => {
       if (this.childProcess) {
         kill(this.childProcess.pid!);
       }
     });
-    if (this._token?.isCancellationRequested) {
+    if (this.token?.isCancellationRequested) {
       if (this.childProcess) {
         kill(this.childProcess.pid!);
       };
@@ -123,7 +120,7 @@ export default class Runner extends EventEmitter {
     });
 
     this.childProcess.on('exit', (code: number | null, signal: string | null) => {
-      this._exited = true;
+      this.exited = true;
 
       this.emit('processExit', code, signal);
     });
@@ -138,7 +135,7 @@ export default class Runner extends EventEmitter {
   }
 
   closeProcess() {
-    if (!this.childProcess || this._exited) {
+    if (!this.childProcess || this.exited) {
       this.logging('debug', 'process has not started or already exited');
       return;
     }

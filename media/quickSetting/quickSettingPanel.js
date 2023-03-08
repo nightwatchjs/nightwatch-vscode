@@ -4,7 +4,7 @@
   // Get all elements
   const headlessElement = document.getElementById('headless-mode');
   const parallelsElement = document.getElementById('parallels');
-  const parallelsElInput = document.querySelector('input[type=number]');
+  const parallelsInputElement = document.querySelector('input[type=number]');
   const openReportElement = document.getElementById('open-report');
 
   for (const input of document.querySelectorAll('input[type=checkbox]')) {
@@ -14,7 +14,7 @@
     });
   }
 
-  parallelsElInput.addEventListener('change', (event) => {
+  parallelsInputElement.addEventListener('change', (event) => {
     const commandName = event.target.getAttribute('name');
     vscode.postMessage({ method: 'change', params: { command: commandName, value: event.target.value } });
   });

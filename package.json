@@ -107,7 +107,7 @@
 			"title": "Nightwatch",
 			"properties": {
 				"nightwatch.settings.shell": {
-					"markdownDescription": "Shell path or login-shell to override the NIghtwatch runner process default shell (see node [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) for more details)",
+					"markdownDescription": "Override the Nightwatch runner process default shell (see node [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) for more details)",
 					"type": [
 						"string",
 						"null"
@@ -127,13 +127,13 @@
 					"scope": "resource"
 				},
 				"nightwatch.settings.testPath": {
-					"description": "The path to your e2e test folder",
+					"description": "Set the path to your Nightwatch tests folder",
 					"type": "string",
 					"default": "",
 					"scope": "resource"
 				},
 				"nightwatch.settings.nodeEnv": {
-					"markdownDescription": "The env passed to runner process in addition to `process.env`",
+					"markdownDescription": "Pass environment settings to runner process in addition to `process.env`",
 					"type": [
 						"object",
 						"null"
@@ -148,25 +148,25 @@
 					"scope": "resource"
 				},
 				"nightwatch.quickSettings.headlessMode": {
-					"description": "Run Browser in headless Mode",
+					"description": "Run Nightwatch tests in headless mode",
 					"type": "boolean",
 					"default": false,
 					"scope": "resource"
 				},
 				"nightwatch.quickSettings.openReport": {
-					"description": "Open Report after the test run",
+					"description": "Open report after the test run is complete",
 					"type": "boolean",
 					"default": false,
 					"scope": "resource"
 				},
 				"nightwatch.quickSettings.parallels": {
-					"description": "Specifies number of parallels nightwatch uses to spawn tests",
+					"description": "Specify the number of parallels Nightwatch should use to spawn tests.",
 					"type": "number",
 					"default": 0,
 					"scope": "resource"
 				},
 				"nightwatch.quickSettings.environments": {
-					"description": "Environments list to run nightwatch tests",
+					"description": "Run Nightwatch on this environment",
 					"type": "string",
 					"default": "",
 					"scope": "resource"

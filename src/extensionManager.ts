@@ -128,10 +128,7 @@ export class ExtensionManager {
   onDidChangeConfiguration(event: vsCodeTypes.ConfigurationChangeEvent): void {
     const vscode = this._vscode;
 
-    if (
-      event.affectsConfiguration('nightwatch') &&
-      !(event.affectsConfiguration('nightwatch.quickSettings') || event.affectsConfiguration('nightwatch.environments'))
-    ) {
+    if (event.affectsConfiguration('nightwatch') && event.affectsConfiguration('nightwatch.settings')) {
       vscode.workspace.workspaceFolders?.forEach((workspaceFolder) => {
         const nightwatchExt = this.getByExtName(workspaceFolder.name);
         if (nightwatchExt && event.affectsConfiguration('nightwatch', workspaceFolder.uri)) {

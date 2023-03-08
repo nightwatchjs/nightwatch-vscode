@@ -51,7 +51,7 @@ export class NightwatchExt {
 
   constructor(
     private _vscode: vsCodeTypes.VSCode,
-    public workspaceFolder: vsCodeTypes.WorkspaceFolder,
+    private workspaceFolder: vsCodeTypes.WorkspaceFolder,
     private debugConfigurationProvider: DebugConfigurationProvider,
     private context: vsCodeTypes.ExtensionContext
   ) {
