@@ -9,7 +9,7 @@ import { NightwatchExtContext } from './types';
 
 export const getExtensionResourceSettings = (
   vscode: vsCodeTypes.VSCode,
-  uri: vsCodeTypes.Uri
+  uri: vsCodeTypes.Uri,
 ): NightwatchExtensionResourceSettings => {
   const config = vscode.workspace.getConfiguration('nightwatch', uri);
 
@@ -23,7 +23,7 @@ export const getExtensionResourceSettings = (
     openReport: config.get<boolean>('quickSettings.openReport'),
     headlessMode: config.get<boolean>('quickSettings.headlessMode'),
     parallels: config.get<number>('quickSettings.parallels'),
-    environments: config.get<string>('quickSettings.environments')
+    environments: config.get<string>('quickSettings.environments'),
   };
 };
 
@@ -31,15 +31,12 @@ export const createNightwatchExtContext = (
   vscode: vsCodeTypes.VSCode,
   workspaceFolder: vsCodeTypes.WorkspaceFolder,
   settings: NightwatchExtensionResourceSettings,
-  nightwatchSettings: Settings
+  nightwatchSettings: Settings,
 ): NightwatchExtContext => {
   const createRunnerWorkspace = async () => {
     const workspaceFolderName = workspaceFolder.name;
-    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(
-      vscode,
-      settings,
-      workspaceFolder
-    );
+    const [nightwatchCommandLine, pathToConfig] =
+      await getNightwatchCommandAndConfig(vscode, settings, workspaceFolder);
     return new ProjectWorkspace(
       settings.testPath ?? '',
       pathToConfig,
@@ -47,23 +44,26 @@ export const createNightwatchExtContext = (
       settings.debugMode,
       settings.nodeEnv,
       settings.shell,
-      workspaceFolderName
+      workspaceFolderName,
     );
   };
 
   return {
     workspace: workspaceFolder,
     createRunnerWorkspace,
-    loggingFactory: workspaceLogging(workspaceFolder.name, settings.debugMode ?? false),
+    loggingFactory: workspaceLogging(
+      workspaceFolder.name,
+      settings.debugMode ?? false,
+    ),
     settings,
-    nightwatchSettings
+    nightwatchSettings,
   };
 };
 
 const getNightwatchCommandAndConfig = async (
   vscode: vsCodeTypes.VSCode,
   settings: NightwatchExtensionResourceSettings,
-  workspaceFolder: vsCodeTypes.WorkspaceFolder
+  workspaceFolder: vsCodeTypes.WorkspaceFolder,
 ): Promise<string[]> => {
   const nightwatchConfigFile = await findNightwatchConfigFile(vscode);
 
@@ -75,12 +75,19 @@ const getNightwatchCommandAndConfig = async (
   }
 
   const possibleNightwatchCommandLine =
-    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) || 'npx nightwatch' + nodeBinExtension;
+    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) ||
+    'npx nightwatch' + nodeBinExtension;
   return [possibleNightwatchCommandLine, nightwatchConfigFile ?? ''];
 };
 
-const findNightwatchConfigFile = async (vscode: vsCodeTypes.VSCode): Promise<string | undefined> => {
-  const configFiles = await vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1);
+const findNightwatchConfigFile = async (
+  vscode: vsCodeTypes.VSCode,
+): Promise<string | undefined> => {
+  const configFiles = await vscode.workspace.findFiles(
+    '**/*nightwatch*.conf.{js,ts,cjs}',
+    undefined,
+    1,
+  );
 
   for (const configFileUri of configFiles) {
     return configFileUri.fsPath;
@@ -94,7 +101,7 @@ export function cleanAnsi(str: string): string {
   return str.replace(
     // eslint-disable-next-line no-control-regex
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-    ''
+    '',
   );
 }
 

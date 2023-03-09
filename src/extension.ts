@@ -45,34 +45,76 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
       type: 'all-workspaces',
       name: 'headlessMode',
       callback: async (extension) => {
-        const prevConfigValue = extension.getConfig<boolean>('quickSettings.headlessMode');
-        extension.updateConfig<boolean>('quickSettings.headlessMode', !prevConfigValue);
+        const prevConfigValue = extension.getConfig<boolean>(
+          'quickSettings.headlessMode',
+        );
+        extension.updateConfig<boolean>(
+          'quickSettings.headlessMode',
+          !prevConfigValue,
+        );
       },
     }),
     extensionManager.registerCommand({
       type: 'all-workspaces',
       name: 'openReport',
       callback: async (extension) => {
-        const prevConfigValue = extension.getConfig<boolean>('quickSettings.openReport');
-        extension.updateConfig<boolean>('quickSettings.openReport', !prevConfigValue);
+        const prevConfigValue = extension.getConfig<boolean>(
+          'quickSettings.openReport',
+        );
+        extension.updateConfig<boolean>(
+          'quickSettings.openReport',
+          !prevConfigValue,
+        );
       },
     }),
-    vscode.workspace.onDidChangeConfiguration(extensionManager.onDidChangeConfiguration, extensionManager),
-    vscode.workspace.onDidChangeWorkspaceFolders(extensionManager.onDidChangeWorkspaceFolders, extensionManager),
-    vscode.workspace.onDidCloseTextDocument(extensionManager.onDidCloseTextDocument, extensionManager),
-    vscode.window.onDidChangeActiveTextEditor(extensionManager.onDidChangeActiveTextEditor, extensionManager),
-    vscode.workspace.onDidChangeTextDocument(extensionManager.onDidChangeTextDocument, extensionManager),
-    vscode.workspace.onDidCreateFiles(extensionManager.onDidCreateFiles, extensionManager),
-    vscode.workspace.onDidRenameFiles(extensionManager.onDidRenameFiles, extensionManager),
-    vscode.workspace.onDidDeleteFiles(extensionManager.onDidDeleteFiles, extensionManager),
-    vscode.workspace.onDidSaveTextDocument(extensionManager.onDidSaveTextDocument, extensionManager),
-    vscode.workspace.onWillSaveTextDocument(extensionManager.onWillSaveTextDocument, extensionManager)
+    vscode.workspace.onDidChangeConfiguration(
+      extensionManager.onDidChangeConfiguration,
+      extensionManager,
+    ),
+    vscode.workspace.onDidChangeWorkspaceFolders(
+      extensionManager.onDidChangeWorkspaceFolders,
+      extensionManager,
+    ),
+    vscode.workspace.onDidCloseTextDocument(
+      extensionManager.onDidCloseTextDocument,
+      extensionManager,
+    ),
+    vscode.window.onDidChangeActiveTextEditor(
+      extensionManager.onDidChangeActiveTextEditor,
+      extensionManager,
+    ),
+    vscode.workspace.onDidChangeTextDocument(
+      extensionManager.onDidChangeTextDocument,
+      extensionManager,
+    ),
+    vscode.workspace.onDidCreateFiles(
+      extensionManager.onDidCreateFiles,
+      extensionManager,
+    ),
+    vscode.workspace.onDidRenameFiles(
+      extensionManager.onDidRenameFiles,
+      extensionManager,
+    ),
+    vscode.workspace.onDidDeleteFiles(
+      extensionManager.onDidDeleteFiles,
+      extensionManager,
+    ),
+    vscode.workspace.onDidSaveTextDocument(
+      extensionManager.onDidSaveTextDocument,
+      extensionManager,
+    ),
+    vscode.workspace.onWillSaveTextDocument(
+      extensionManager.onWillSaveTextDocument,
+      extensionManager,
+    ),
   );
 };
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export async function activate(context: vsCodeTypes.ExtensionContext): Promise<void> {
+export async function activate(
+  context: vsCodeTypes.ExtensionContext,
+): Promise<void> {
   // TODO: Remove console.log before MVP release
   console.log('extension "nightwatch-vscode" is now active!');
   // TODO: Activate only if nightwatch is present in Package.json

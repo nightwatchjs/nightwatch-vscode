@@ -6,7 +6,11 @@ import { Logging } from '../Logging';
 import { NightwatchExtRequestType, NightwatchRunEvent } from '../NightwatchExt';
 import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
 import { TestAssertionStatus } from '../NightwatchRunner';
-import { ContainerNode, DataNode, ROOT_NODE_NAME } from '../TestResults/matchNode';
+import {
+  ContainerNode,
+  DataNode,
+  ROOT_NODE_NAME,
+} from '../TestResults/matchNode';
 import { TestSuitChangeEvent } from '../TestResults/testResultEvents';
 import { ItemNodeType, TestSuiteResult } from '../TestResults/types';
 import * as vsCodeTypes from '../types/vscodeTypes';
@@ -21,19 +25,27 @@ import {
   WithUri,
 } from './types';
 
-const deepItemState = (item: vsCodeTypes.TestItem, setState: (item: vsCodeTypes.TestItem) => void): void => {
+const deepItemState = (
+  item: vsCodeTypes.TestItem,
+  setState: (item: vsCodeTypes.TestItem) => void,
+): void => {
   setState(item);
   item.children.forEach((child) => deepItemState(child, setState));
 };
 
-const isDataNode = (arg: ItemNodeType): arg is ItemDataNodeType => (arg as any).data != null;
-const isAssertDataNode = (arg: ItemNodeType): arg is DataNode<TestAssertionStatus> =>
+const isDataNode = (arg: ItemNodeType): arg is ItemDataNodeType =>
+  (arg as any).data != null;
+const isAssertDataNode = (
+  arg: ItemNodeType,
+): arg is DataNode<TestAssertionStatus> =>
   isDataNode(arg) && (arg.data as any).fullName;
 
 const isTestItemRunRequest = (arg: any): arg is TestItemRunRequest =>
   arg.itemRun?.item && arg.itemRun?.run && arg.itemRun?.end;
 
-abstract class TestItemDataBase implements TestItemData, NightwatchRunnable, WithUri {
+abstract class TestItemDataBase
+  implements TestItemData, NightwatchRunnable, WithUri
+{
   item!: vsCodeTypes.TestItem;
   log: Logging;
 
@@ -68,19 +80,33 @@ abstract class TestItemDataBase implements TestItemData, NightwatchRunnable, Wit
 }
 
 export class FolderData extends TestItemDataBase {
-  static makeUri = (parent: vscode.TestItem, folderName: string): vscode.Uri => {
+  static makeUri = (
+    parent: vscode.TestItem,
+    folderName: string,
+  ): vscode.Uri => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return vscode.Uri.joinPath(parent.uri!, folderName);
   };
 
-  constructor(readonly context: NightwatchTestProviderContext, readonly name: string, parent: vscode.TestItem) {
+  constructor(
+    readonly context: NightwatchTestProviderContext,
+    readonly name: string,
+    parent: vscode.TestItem,
+  ) {
     super(context, 'FolderData');
     this.item = this.createTestItem(name, parent);
   }
 
   private createTestItem(name: string, parent: vscode.TestItem) {
     const uri = FolderData.makeUri(parent, name);
-    const item = this.context.createTestItem(uri.fsPath, name, uri, this, parent, ['run']);
+    const item = this.context.createTestItem(
+      uri.fsPath,
+      name,
+      uri,
+      this,
+      parent,
+      ['run'],
+    );
 
     item.canResolveChildren = false;
     return item;
@@ -99,7 +125,11 @@ abstract class TestResultData extends TestItemDataBase {
     super(context, name);
   }
 
-  makeTestId(fileUri: vscode.Uri, target?: ItemNodeType, extra?: string): string {
+  makeTestId(
+    fileUri: vscode.Uri,
+    target?: ItemNodeType,
+    extra?: string,
+  ): string {
     const parts = [fileUri.fsPath];
     if (target && target.name !== ROOT_NODE_NAME) {
       parts.push(target.fullName);
@@ -113,7 +143,7 @@ abstract class TestResultData extends TestItemDataBase {
   updateItemState(
     run: vscode.TestRun,
     result?: TestSuiteResult | TestAssertionStatus,
-    errorLocation?: vscode.Location
+    errorLocation?: vscode.Location,
   ): void {
     if (!result) {
       return;
@@ -143,7 +173,8 @@ abstract class TestResultData extends TestItemDataBase {
       return true;
     }
     // truncate the last "extra-id" added for duplicate test names before comparing
-    const truncateExtra = (id: string): string => id.replace(/(.*)(#[0-9]+$)/, '$1');
+    const truncateExtra = (id: string): string =>
+      id.replace(/(.*)(#[0-9]+$)/, '$1');
     return truncateExtra(id1) === truncateExtra(id2);
   }
 
@@ -169,7 +200,9 @@ abstract class TestResultData extends TestItemDataBase {
         if (nodes.length > 1) {
           // duplicate names found, append index to make a unique id: re-create the item with new id
           nodes.forEach((n, idx) => {
-            newItems.push(new TestData(this.context, this.uri, n, this.item, `${idx}`).item);
+            newItems.push(
+              new TestData(this.context, this.uri, n, this.item, `${idx}`).item,
+            );
           });
           return;
         }
@@ -177,7 +210,8 @@ abstract class TestResultData extends TestItemDataBase {
         if (cItem) {
           this.context.getData<TestData>(cItem)?.updateNode(nodes[0]);
         } else {
-          cItem = new TestData(this.context, this.uri, nodes[0], this.item).item;
+          cItem = new TestData(this.context, this.uri, nodes[0], this.item)
+            .item;
         }
         newItems.push(cItem);
       });
@@ -190,31 +224,44 @@ abstract class TestResultData extends TestItemDataBase {
   createLocation(uri: vscode.Uri, zeroBasedLine = 0): vscode.Location {
     return new vscode.Location(
       uri,
-      new vscode.Range(new vscode.Position(zeroBasedLine, 0), new vscode.Position(zeroBasedLine, 0))
+      new vscode.Range(
+        new vscode.Position(zeroBasedLine, 0),
+        new vscode.Position(zeroBasedLine, 0),
+      ),
     );
   }
 }
 
 export class TestDocumentRoot extends TestResultData {
-  constructor(readonly context: NightwatchTestProviderContext, fileUri: vscode.Uri, parent: vscode.TestItem) {
+  constructor(
+    readonly context: NightwatchTestProviderContext,
+    fileUri: vscode.Uri,
+    parent: vscode.TestItem,
+  ) {
     super(context, 'TestDocumentRoot');
     this.item = this.createTestItem(fileUri, parent);
   }
 
-  private createTestItem(fileUri: vscode.Uri, parent: vscode.TestItem): vscode.TestItem {
+  private createTestItem(
+    fileUri: vscode.Uri,
+    parent: vscode.TestItem,
+  ): vscode.TestItem {
     const item = this.context.createTestItem(
       this.makeTestId(fileUri),
       path.basename(fileUri.fsPath),
       fileUri,
       this,
-      parent
+      parent,
     );
 
     item.canResolveChildren = true;
     return item;
   }
 
-  discoverTest = (run?: vscode.TestRun, parsedRoot?: ContainerNode<ItBlock>): void => {
+  discoverTest = (
+    run?: vscode.TestRun,
+    parsedRoot?: ContainerNode<ItBlock>,
+  ): void => {
     this.createChildItems(parsedRoot);
     if (run) {
       this.updateResultState(run);
@@ -224,24 +271,34 @@ export class TestDocumentRoot extends TestResultData {
   private createChildItems = (parsedRoot?: ContainerNode<ItBlock>): void => {
     try {
       const container =
-        parsedRoot ?? this.context.ext.testResolveProvider.getTestSuiteResult(this.item.id)?.assertionContainer;
+        parsedRoot ??
+        this.context.ext.testResolveProvider.getTestSuiteResult(this.item.id)
+          ?.assertionContainer;
       if (!container) {
         this.item.children.replace([]);
       } else {
         this.syncChildNodes(container);
       }
     } catch (e) {
-      this.log('error', `[TestDocumentRoot] "${this.item.id}" createChildItems failed:`, e);
+      this.log(
+        'error',
+        `[TestDocumentRoot] "${this.item.id}" createChildItems failed:`,
+        e,
+      );
     } finally {
       this.item.canResolveChildren = false;
     }
   };
 
   public updateResultState(run: vscode.TestRun): void {
-    const suiteResult = this.context.ext.testResolveProvider.getTestSuiteResult(this.item.id);
+    const suiteResult = this.context.ext.testResolveProvider.getTestSuiteResult(
+      this.item.id,
+    );
     this.updateItemState(run, suiteResult);
 
-    this.item.children.forEach((childItem) => this.context.getData<TestData>(childItem)?.updateResultState(run));
+    this.item.children.forEach((childItem) =>
+      this.context.getData<TestData>(childItem)?.updateResultState(run),
+    );
   }
 
   getNightwatchRunRequest = (): NightwatchExtRequestType => {
@@ -256,7 +313,9 @@ export class TestDocumentRoot extends TestResultData {
   }
 
   public onTestMatched = (): void => {
-    this.item.children.forEach((childItem) => this.context.getData<TestData>(childItem)?.onTestMatched());
+    this.item.children.forEach((childItem) =>
+      this.context.getData<TestData>(childItem)?.onTestMatched(),
+    );
   };
 }
 
@@ -282,7 +341,7 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
       this.context.ext.workspace.uri,
       this,
       undefined,
-      ['run']
+      ['run'],
     );
 
     item.canResolveChildren = true;
@@ -313,8 +372,12 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
   // test result event handling
   private registerEvents = (): void => {
     this.listeners = [
-      this.context.ext.testResolveProvider.events.testListUpdated.event(this.onTestListUpdated),
-      this.context.ext.testResolveProvider.events.testSuiteChanged.event(this.onTestSuiteChanged),
+      this.context.ext.testResolveProvider.events.testListUpdated.event(
+        this.onTestListUpdated,
+      ),
+      this.context.ext.testResolveProvider.events.testSuiteChanged.event(
+        this.onTestSuiteChanged,
+      ),
       this.context.ext.sessionEvents.onRunEvent.event(this.onRunEvent),
     ];
   };
@@ -323,20 +386,33 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
     this.listeners.length = 0;
   };
 
-  private createRun = (name?: string, item?: vscode.TestItem): vscode.TestRun => {
+  private createRun = (
+    name?: string,
+    item?: vscode.TestItem,
+  ): vscode.TestRun => {
     const target = item ?? this.item;
-    return this.context.createTestRun(new vscode.TestRunRequest([target]), name ?? target.id);
+    return this.context.createTestRun(
+      new vscode.TestRunRequest([target]),
+      name ?? target.id,
+    );
   };
 
-  private addFolder = (parent: FolderData | undefined, folderName: string): FolderData => {
+  private addFolder = (
+    parent: FolderData | undefined,
+    folderName: string,
+  ): FolderData => {
     const p = parent ?? this;
     const uri = FolderData.makeUri(p.item, folderName);
     return (
-      this.context.getChildData<FolderData>(p.item, uri.fsPath) ?? new FolderData(this.context, folderName, p.item)
+      this.context.getChildData<FolderData>(p.item, uri.fsPath) ??
+      new FolderData(this.context, folderName, p.item)
     );
   };
   private addPath = (absoluteFileName: string): FolderData | undefined => {
-    const relativePath = path.relative(this.context.ext.workspace.uri.fsPath, absoluteFileName);
+    const relativePath = path.relative(
+      this.context.ext.workspace.uri.fsPath,
+      absoluteFileName,
+    );
     const folders = relativePath.split(path.sep).slice(0, -1);
 
     return folders.reduce(this.addFolder, undefined);
@@ -347,16 +423,23 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
    */
   private addTestFile = (
     absoluteFileName: string,
-    onTestDocument: (doc: TestDocumentRoot) => void
+    onTestDocument: (doc: TestDocumentRoot) => void,
   ): TestDocumentRoot => {
     const parent = this.addPath(absoluteFileName) ?? this;
-    let docRoot = this.context.getChildData<TestDocumentRoot>(parent.item, absoluteFileName);
+    let docRoot = this.context.getChildData<TestDocumentRoot>(
+      parent.item,
+      absoluteFileName,
+    );
     if (!docRoot) {
       docRoot = this.testDocuments.get(absoluteFileName);
       if (docRoot) {
         parent.item.children.add(docRoot.item);
       } else {
-        docRoot = new TestDocumentRoot(this.context, vscode.Uri.file(absoluteFileName), parent.item);
+        docRoot = new TestDocumentRoot(
+          this.context,
+          vscode.Uri.file(absoluteFileName),
+          parent.item,
+        );
       }
     }
     this.testDocuments.set(absoluteFileName, docRoot);
@@ -371,7 +454,10 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
    * But will reuse the existing test document from cache (testDocuments) to preserve info
    * such as parsed result that could be stored before test list update
    */
-  private onTestListUpdated = (absoluteFileNames: string[] | undefined, run?: vscode.TestRun): void => {
+  private onTestListUpdated = (
+    absoluteFileNames: string[] | undefined,
+    run?: vscode.TestRun,
+  ): void => {
     this.item.children.replace([]);
     const testRoots: TestDocumentRoot[] = [];
 
@@ -381,13 +467,17 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
         this.addTestFile(f, (testRoot) => {
           testRoot.updateResultState(aRun);
           testRoots.push(testRoot);
-        })
+        }),
       );
       //sync testDocuments
       this.testDocuments.clear();
       testRoots.forEach((t) => this.testDocuments.set(t.item.id, t));
     } catch (e) {
-      this.log('error', `[WorkspaceRoot] "${this.item.id}" onTestListUpdated failed:`, e);
+      this.log(
+        'error',
+        `[WorkspaceRoot] "${this.item.id}" onTestListUpdated failed:`,
+        e,
+      );
     } finally {
       aRun.end();
     }
@@ -407,11 +497,20 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
         const itemRun = this.getItemRun(event.process);
         const run = itemRun?.run ?? this.createRun(event.process.id);
 
-        this.context.appendOutput(`update status from run "${event.process.id}": ${event.files.length} files`, run);
+        this.context.appendOutput(
+          `update status from run "${event.process.id}": ${event.files.length} files`,
+          run,
+        );
         try {
-          event.files.forEach((f) => this.addTestFile(f, (testRoot) => testRoot.discoverTest(run)));
+          event.files.forEach((f) =>
+            this.addTestFile(f, (testRoot) => testRoot.discoverTest(run)),
+          );
         } catch (e) {
-          this.log('error', `"${this.item.id}" onTestSuiteChanged: assertions-updated failed:`, e);
+          this.log(
+            'error',
+            `"${this.item.id}" onTestSuiteChanged: assertions-updated failed:`,
+            e,
+          );
         } finally {
           (itemRun ?? run).end();
         }
@@ -422,13 +521,17 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
         break;
       }
       case 'test-parsed': {
-        this.addTestFile(event.file, (testRoot) => testRoot.discoverTest(undefined, event.testContainer));
+        this.addTestFile(event.file, (testRoot) =>
+          testRoot.discoverTest(undefined, event.testContainer),
+        );
       }
     }
   };
 
   /** get test item from nightwatch process. If running tests from source file, will return undefined */
-  private getItemFromProcess = (process: NightwatchProcessInfo): vscode.TestItem | undefined => {
+  private getItemFromProcess = (
+    process: NightwatchProcessInfo,
+  ): vscode.TestItem | undefined => {
     let fileName;
     switch (process.request.type) {
       case 'all-tests':
@@ -437,7 +540,9 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
         fileName = process.request.testFileName;
         break;
       default:
-        throw new Error(`unsupported external process type ${process.request.type}`);
+        throw new Error(
+          `unsupported external process type ${process.request.type}`,
+        );
     }
 
     return this.testDocuments.get(fileName)?.item;
@@ -455,8 +560,12 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
     return itemRun;
   };
 
-  private getItemRun = (process: NightwatchProcessInfo): TestItemRun | undefined =>
-    isTestItemRunRequest(process.request) ? process.request.itemRun : this.cachedRun.get(process.id);
+  private getItemRun = (
+    process: NightwatchProcessInfo,
+  ): TestItemRun | undefined =>
+    isTestItemRunRequest(process.request)
+      ? process.request.itemRun
+      : this.cachedRun.get(process.id);
 
   private onRunEvent = (event: NightwatchRunEvent) => {
     if (event.process.request.type === 'not-test') {
@@ -481,7 +590,12 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
           itemRun = itemRun ?? this.createTestItemRun(event);
           const text = event.raw ?? event.text;
           const color = event.isError ? 'red' : undefined;
-          this.context.appendOutput(text, itemRun.run, event.newLine ?? false, color);
+          this.context.appendOutput(
+            text,
+            itemRun.run,
+            event.newLine ?? false,
+            color,
+          );
           break;
         }
         case 'start': {
@@ -499,7 +613,10 @@ export class WorkspaceRoot extends TestItemDataBase implements Debuggable {
               itemRun = this.createTestItemRun(event);
             }
             this.context.appendOutput(event.error, itemRun.run, true, 'red');
-            itemRun.run.errored(itemRun.item, new vscode.TestMessage(event.error));
+            itemRun.run.errored(
+              itemRun.item,
+              new vscode.TestMessage(event.error),
+            );
           }
           itemRun?.end();
           break;
@@ -522,20 +639,24 @@ export class TestData extends TestResultData implements Debuggable {
     fileUri: vscode.Uri,
     private node: ItemNodeType,
     parent: vscode.TestItem,
-    extraId?: string
+    extraId?: string,
   ) {
     super(context, 'TestData');
     this.item = this.createTestItem(fileUri, parent, extraId);
     this.updateNode(node);
   }
 
-  private createTestItem(fileUri: vscode.Uri, parent: vscode.TestItem, extraId?: string) {
+  private createTestItem(
+    fileUri: vscode.Uri,
+    parent: vscode.TestItem,
+    extraId?: string,
+  ) {
     const item = this.context.createTestItem(
       this.makeTestId(fileUri, this.node, extraId),
       this.node.name,
       fileUri,
       this,
-      parent
+      parent,
     );
 
     item.canResolveChildren = false;
@@ -587,15 +708,22 @@ export class TestData extends TestResultData implements Debuggable {
   public onTestMatched(): void {
     // assertion might have picked up source block location
     this.updateItemRange();
-    this.item.children.forEach((childItem) => this.context.getData<TestData>(childItem)?.onTestMatched());
+    this.item.children.forEach((childItem) =>
+      this.context.getData<TestData>(childItem)?.onTestMatched(),
+    );
   }
 
   public updateResultState(run: vscode.TestRun): void {
     if (this.node && isAssertDataNode(this.node)) {
       const assertion = this.node.data;
-      const errorLine = assertion.line != null ? this.createLocation(this.uri, assertion.line - 1) : undefined;
+      const errorLine =
+        assertion.line != null
+          ? this.createLocation(this.uri, assertion.line - 1)
+          : undefined;
       this.updateItemState(run, assertion, errorLine);
     }
-    this.item.children.forEach((childItem) => this.context.getData<TestData>(childItem)?.updateResultState(run));
+    this.item.children.forEach((childItem) =>
+      this.context.getData<TestData>(childItem)?.updateResultState(run),
+    );
   }
 }

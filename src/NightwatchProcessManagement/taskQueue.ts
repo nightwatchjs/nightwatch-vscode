@@ -6,7 +6,10 @@ import { Task, TaskQueue } from './types';
  * @param maxWorker
  * @returns TaskQueue
  */
-export const createTaskQueue = <T>(name: string, maxWorker: number): TaskQueue<T> => {
+export const createTaskQueue = <T>(
+  name: string,
+  maxWorker: number,
+): TaskQueue<T> => {
   if (maxWorker <= 0) {
     throw new Error('invalid maxWorker, it should be > 0');
   }

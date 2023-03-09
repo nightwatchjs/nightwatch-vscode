@@ -18,7 +18,7 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
     vscode: vsCodeTypes.VSCode,
     extensionUri: vsCodeTypes.Uri,
     workspaceUri: vsCodeTypes.Uri,
-    nightwatchSettings: Settings
+    nightwatchSettings: Settings,
   ) {
     this._vscode = vscode;
     this._extensionUri = extensionUri;
@@ -30,9 +30,18 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
   }
 
   public async changeConfig() {
-    const config = this._vscode.workspace.getConfiguration('nightwatch', this._workspaceUri);
-    const parallels = this._nightwatchSettings.get<number>(`quickSettings.parallels`);
-    await config.update('quickSettings.parallels', parallels === 0 ? os.cpus().length : parallels, true);
+    const config = this._vscode.workspace.getConfiguration(
+      'nightwatch',
+      this._workspaceUri,
+    );
+    const parallels = this._nightwatchSettings.get<number>(
+      `quickSettings.parallels`,
+    );
+    await config.update(
+      'quickSettings.parallels',
+      parallels === 0 ? os.cpus().length : parallels,
+      true,
+    );
   }
 
   public getWebview() {
@@ -42,7 +51,7 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
   public resolveWebviewView(
     webviewView: WebviewView,
     context: WebviewViewResolveContext<unknown>,
-    token: vsCodeTypes.CancellationToken
+    token: vsCodeTypes.CancellationToken,
   ): void | Thenable<void> {
     this._view = webviewView;
 
@@ -51,13 +60,22 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._htmlForWebview(this._vscode, this._extensionUri, webviewView.webview);
+    webviewView.webview.html = this._htmlForWebview(
+      this._vscode,
+      this._extensionUri,
+      webviewView.webview,
+    );
     webviewView.webview.onDidReceiveMessage((data) => {
       if (data.method === 'toggle') {
-        this._vscode.commands.executeCommand(`${extensionName}.${data.params.command}`);
+        this._vscode.commands.executeCommand(
+          `${extensionName}.${data.params.command}`,
+        );
       }
       if (data.method === 'change') {
-        this._nightwatchSettings.set<number>(`quickSettings.${data.params.command}`, +data.params.value);
+        this._nightwatchSettings.set<number>(
+          `quickSettings.${data.params.command}`,
+          +data.params.value,
+        );
       }
     });
 
@@ -71,12 +89,26 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
     });
   }
 
-  private _htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Uri, webview: vsCodeTypes.Webview) {
+  private _htmlForWebview(
+    vscode: vsCodeTypes.VSCode,
+    extensionURI: vsCodeTypes.Uri,
+    webview: vsCodeTypes.Webview,
+  ) {
     const styleURI = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.css')
+      vscode.Uri.joinPath(
+        extensionURI,
+        'media',
+        'quickSetting',
+        'quickSettingPanel.css',
+      ),
     );
     const scriptURI = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionURI, 'media', 'quickSetting', 'quickSettingPanel.js')
+      vscode.Uri.joinPath(
+        extensionURI,
+        'media',
+        'quickSetting',
+        'quickSettingPanel.js',
+      ),
     );
 
     const nonce = getNonce();
@@ -87,7 +119,9 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
       <head>
         <meta charset="UTF-8">
         <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+          content="default-src 'none'; style-src ${
+            webview.cspSource
+          }; script-src 'nonce-${nonce}';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleURI}" rel="stylesheet">
         <title>Nightwatch Quick Settings</title>
@@ -107,7 +141,9 @@ export class QuickSettingPanel implements vsCodeTypes.WebviewViewProvider {
 
           <article>
             <label for="parallels">Number of Parallels</label>
-            <input type="number" id="parallels" name="parallels" min="2" max="12" step="2" value="${os.cpus().length}">
+            <input type="number" id="parallels" name="parallels" min="2" max="12" step="2" value="${
+              os.cpus().length
+            }">
           </article>
 
         </section>

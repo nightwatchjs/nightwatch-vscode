@@ -43,7 +43,7 @@ const extensionConfig = {
     parser: {
       javascript: {
         commonjsMagicComments: true,
-      }
+      },
     },
     rules: [
       {

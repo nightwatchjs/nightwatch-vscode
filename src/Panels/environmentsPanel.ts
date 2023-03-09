@@ -31,7 +31,7 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
     extensionUri: vsCodeTypes.Uri,
     workspaceUri: vsCodeTypes.Uri,
     context: vsCodeTypes.ExtensionContext,
-    vscodeSettings: Settings
+    vscodeSettings: Settings,
   ) {
     this._vscode = vscode;
     this._extensionUri = extensionUri;
@@ -43,7 +43,7 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
   resolveWebviewView(
     webviewView: vsCodeTypes.WebviewView,
     context: WebviewViewResolveContext<unknown>,
-    token: vsCodeTypes.CancellationToken
+    token: vsCodeTypes.CancellationToken,
   ): void | Thenable<void> {
     this._view = webviewView;
     webviewView.webview.options = {
@@ -51,12 +51,19 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._htmlForWebview(this._vscode, this._extensionUri, webviewView.webview);
+    webviewView.webview.html = this._htmlForWebview(
+      this._vscode,
+      this._extensionUri,
+      webviewView.webview,
+    );
     this._addNwEnvironments();
 
     webviewView.webview.onDidReceiveMessage((data) => {
       if (data.method === 'environment-select' && data.params.state) {
-        this._settings.set<string>(`quickSettings.environments`, data.params.environment);
+        this._settings.set<string>(
+          `quickSettings.environments`,
+          data.params.environment,
+        );
       }
     });
     this._vscode.workspace.onDidChangeConfiguration((_event) => {
@@ -65,10 +72,12 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
     this.updateNwEnvironments();
   }
 
-  public updateNwEnvironments() {  
+  public updateNwEnvironments() {
     return this._view?.webview.postMessage({
       method: 'update-selected-environments',
-      params: { environments: this._settings.json('quickSettings').environments },
+      params: {
+        environments: this._settings.json('quickSettings').environments,
+      },
     });
   }
 
@@ -80,16 +89,31 @@ export class EnvironmentsPanel implements vsCodeTypes.WebviewViewProvider {
   }
 
   private getNwEnvironments(): string[] {
-    const environments = this._context.workspaceState.get<NwConfig>('nwConfig')!.test_settings;
+    const environments =
+      this._context.workspaceState.get<NwConfig>('nwConfig')!.test_settings;
     return Object.keys(environments).filter((env) => !env.includes('cucumber'));
   }
 
-  private _htmlForWebview(vscode: vsCodeTypes.VSCode, extensionURI: vsCodeTypes.Uri, webview: vsCodeTypes.Webview) {
+  private _htmlForWebview(
+    vscode: vsCodeTypes.VSCode,
+    extensionURI: vsCodeTypes.Uri,
+    webview: vsCodeTypes.Webview,
+  ) {
     const styleURI = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionURI, 'media', 'environments', 'environmentsPanel.css')
+      vscode.Uri.joinPath(
+        extensionURI,
+        'media',
+        'environments',
+        'environmentsPanel.css',
+      ),
     );
     const scriptURI = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionURI, 'media', 'environments', 'environmentsPanel.js')
+      vscode.Uri.joinPath(
+        extensionURI,
+        'media',
+        'environments',
+        'environmentsPanel.js',
+      ),
     );
 
     const nonce = getNonce();

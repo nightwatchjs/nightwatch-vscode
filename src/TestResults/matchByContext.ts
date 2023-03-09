@@ -4,8 +4,17 @@
  *
  */
 
-import { DescribeBlock, ItBlock, Location, NamedBlock, ParsedNode } from 'jest-editor-support';
-import { TestAssertionStatus, TestReconciliationStateType } from '../NightwatchRunner';
+import {
+  DescribeBlock,
+  ItBlock,
+  Location,
+  NamedBlock,
+  ParsedNode,
+} from 'jest-editor-support';
+import {
+  TestAssertionStatus,
+  TestReconciliationStateType,
+} from '../NightwatchRunner';
 import { ContainerNode, DataNode, ROOT_NODE_NAME } from './matchNode';
 import {
   ChildNodeType,
@@ -32,18 +41,27 @@ export const TestReconciliationState: {
   KnownSkip: 'KnownSkip',
 };
 
-const UnknownRange = { start: { line: -1, column: -1 }, end: { line: -1, column: -1 } };
+const UnknownRange = {
+  start: { line: -1, column: -1 },
+  end: { line: -1, column: -1 },
+};
 
-export const buildAssertionContainer = (assertions: TestAssertionStatus[]): ContainerNode<TestAssertionStatus> => {
+export const buildAssertionContainer = (
+  assertions: TestAssertionStatus[],
+): ContainerNode<TestAssertionStatus> => {
   const root = new ContainerNode<TestAssertionStatus>(ROOT_NODE_NAME);
   if (assertions.length > 0) {
     assertions.forEach((a) => {
       const container = root.findContainer(
         a.ancestorTitles,
-        (name: string) => new ContainerNode(name, { isGroup: 'maybe' })
+        (name: string) => new ContainerNode(name, { isGroup: 'maybe' }),
       );
       // the location are actually zero-based, but the "line" attribute is 1-based.
-      const zeroBasedLine = a.location ? a.location.line : a.line ? a.line - 1 : -1;
+      const zeroBasedLine = a.location
+        ? a.location.line
+        : a.line
+        ? a.line - 1
+        : -1;
       container?.addDataNode(
         new DataNode(a.title, zeroBasedLine, a, {
           fullName: a.fullName,
@@ -52,7 +70,7 @@ export const buildAssertionContainer = (assertions: TestAssertionStatus[]): Cont
             start: { line: zeroBasedLine, column: 0 },
             end: { line: zeroBasedLine, column: 0 },
           },
-        })
+        }),
       );
     });
     // TODO: remove this if not needed
@@ -63,16 +81,24 @@ export const buildAssertionContainer = (assertions: TestAssertionStatus[]): Cont
   return root;
 };
 
-export const buildSourceContainer = (sourceRoot: ParsedNode): ContainerNode<ItBlock> => {
-  const isDescribeBlock = (node: ParsedNode): node is DescribeBlock => node.type === 'describe';
+export const buildSourceContainer = (
+  sourceRoot: ParsedNode,
+): ContainerNode<ItBlock> => {
+  const isDescribeBlock = (node: ParsedNode): node is DescribeBlock =>
+    node.type === 'describe';
   const isItBlock = (node: ParsedNode): node is ItBlock => node.type === 'it';
-  const buildNode = (node: ParsedNode, parent: ContainerNode<ItBlock>): void => {
+  const buildNode = (
+    node: ParsedNode,
+    parent: ContainerNode<ItBlock>,
+  ): void => {
     let container = parent;
     const attrs = (namedNode: NamedBlock): OptionalAttributes => ({
       isGroup: namedNode.lastProperty === 'each' ? 'yes' : 'no',
       nonLiteralName: namedNode.nameType !== 'Literal',
       range: {
-        start: namedNode.start ? adjustLocation(namedNode.start) : UnknownRange.start,
+        start: namedNode.start
+          ? adjustLocation(namedNode.start)
+          : UnknownRange.start,
         end: namedNode.end ? adjustLocation(namedNode.end) : UnknownRange.end,
       },
     });
@@ -80,7 +106,9 @@ export const buildSourceContainer = (sourceRoot: ParsedNode): ContainerNode<ItBl
       container = new ContainerNode(node.name, attrs(node));
       parent.addContainerNode(container);
     } else if (isItBlock(node)) {
-      parent.addDataNode(new DataNode(node.name, node.start.line - 1, node, attrs(node)));
+      parent.addDataNode(
+        new DataNode(node.name, node.start.line - 1, node, attrs(node)),
+      );
     }
 
     node.children?.forEach((n) => buildNode(n, container));
@@ -97,19 +125,28 @@ export const buildSourceContainer = (sourceRoot: ParsedNode): ContainerNode<ItBl
   return root;
 };
 
-const adjustLocation = (l: Location): Location => ({ column: l.column - 1, line: l.line - 1 });
-const matchPos = (t: ItBlock, a: TestAssertionStatus, forError = false): boolean => {
+const adjustLocation = (l: Location): Location => ({
+  column: l.column - 1,
+  line: l.line - 1,
+});
+const matchPos = (
+  t: ItBlock,
+  a: TestAssertionStatus,
+  forError = false,
+): boolean => {
   const line = forError ? a.line : a.line ?? a.location?.line;
   return (line != null && line >= t.start.line && line <= t.end.line) || false;
 };
 
 // could not use "instanceof" check as it could fail tests that mocked jest-editor-support like in TestResultProvider.test.ts
-const isSourceDataNode = (arg: DataNode<ItBlock> | ItBlock): arg is DataNode<ItBlock> => (arg as any).data;
+const isSourceDataNode = (
+  arg: DataNode<ItBlock> | ItBlock,
+): arg is DataNode<ItBlock> => (arg as any).data;
 
 export const toMatchResult = (
   source: DataNode<ItBlock> | ItBlock,
   assertionOrErr: DataNode<TestAssertionStatus> | string,
-  reason: MatchEvent
+  reason: MatchEvent,
 ): TestResult => {
   const [test, sourceHistory, sourceName] = isSourceDataNode(source)
     ? [source.data, source.history(reason), source.fullName]
@@ -130,7 +167,10 @@ export const toMatchResult = (
     end: adjustLocation(test.end),
     status: assertion?.status ?? TestReconciliationState.Unknown,
     shortMessage: assertion?.shortMessage ?? err,
-    lineNumberOfError: assertion?.line && matchPos(test, assertion, true) ? assertion.line - 1 : test.end.line - 1,
+    lineNumberOfError:
+      assertion?.line && matchPos(test, assertion, true)
+        ? assertion.line - 1
+        : test.end.line - 1,
     sourceHistory,
     assertionHistory,
   };
@@ -145,13 +185,19 @@ export const createMessaging =
     ];
     switch (info.type) {
       case 'report-unmatched':
-        console.warn(...build(`${info.unmatchedItBlocks.length} unmatched test blocks`));
+        console.warn(
+          ...build(`${info.unmatchedItBlocks.length} unmatched test blocks`),
+        );
         break;
     }
   };
 
 const ContextMatch = (): ContextMatchAlgorithm => {
-  const onMatch = (tNode: NodeType<ItBlock>, aNode: NodeType<TestAssertionStatus>, event: MatchEvent): void => {
+  const onMatch = (
+    tNode: NodeType<ItBlock>,
+    aNode: NodeType<TestAssertionStatus>,
+    event: MatchEvent,
+  ): void => {
     tNode.addEvent(event);
     aNode.addEvent(event);
     aNode.attrs.range = tNode.attrs.range;
@@ -159,7 +205,7 @@ const ContextMatch = (): ContextMatchAlgorithm => {
   const onMatchResult = (
     tNode: DataNode<ItBlock>,
     aNode: DataNode<TestAssertionStatus>,
-    event: MatchEvent
+    event: MatchEvent,
   ): TestResult => {
     onMatch(tNode, aNode, event);
     return toMatchResult(tNode, aNode, event);
@@ -167,22 +213,33 @@ const ContextMatch = (): ContextMatchAlgorithm => {
   const handleTestBlockMatch = (
     result: MatchResultType<'data'>,
     reportUnmatch = false,
-    matchGroup = true
+    matchGroup = true,
   ): TestResult[] => {
     const [t, matched, reason] = result;
     if (matched.length === 0) {
       if (reportUnmatch) {
-        return [toMatchResult(t, `found ${matched.length} matched assertion(s)`, reason)];
+        return [
+          toMatchResult(
+            t,
+            `found ${matched.length} matched assertion(s)`,
+            reason,
+          ),
+        ];
       }
       return [];
     }
 
     return matched.flatMap((a) =>
-      matchGroup ? a.getAll().map((aa) => onMatchResult(t, aa, reason)) : onMatchResult(t, a, reason)
+      matchGroup
+        ? a.getAll().map((aa) => onMatchResult(t, aa, reason))
+        : onMatchResult(t, a, reason),
     );
   };
 
-  const handleDescribeBlockMatch = (result: MatchResultType<'container'>, matchGroup = true): TestResult[] => {
+  const handleDescribeBlockMatch = (
+    result: MatchResultType<'container'>,
+    matchGroup = true,
+  ): TestResult[] => {
     const [t, matched, reason] = result;
     if (matched.length === 0) {
       return [];
@@ -192,7 +249,9 @@ const ContextMatch = (): ContextMatchAlgorithm => {
       onMatch(t, a, reason);
       return matchContainers(t, a);
     };
-    return matched.flatMap((a) => (matchGroup ? a.getAll().flatMap(_matchContainers) : _matchContainers(a)));
+    return matched.flatMap((a) =>
+      matchGroup ? a.getAll().flatMap(_matchContainers) : _matchContainers(a),
+    );
   };
 
   // match methods
@@ -205,10 +264,11 @@ const ContextMatch = (): ContextMatchAlgorithm => {
   const classicMatch = <C extends ContextType>(
     type: ClassicMatchType,
     tList: ChildNodeType<ItBlock, C>[],
-    aList: ChildNodeType<TestAssertionStatus, C>[]
+    aList: ChildNodeType<TestAssertionStatus, C>[],
   ): MatchMethodResult<C> => {
     const reason = type === 'by-name' ? 'match-by-name' : 'match-by-location';
-    const options = type === 'by-name' ? matchByNameOptions : matchByLocationOptions;
+    const options =
+      type === 'by-name' ? matchByNameOptions : matchByLocationOptions;
     const results: MatchResultType<C>[] = [];
 
     const unmatchedT: ChildNodeType<ItBlock, C>[] = tList.filter((t) => {
@@ -236,13 +296,17 @@ const ContextMatch = (): ContextMatchAlgorithm => {
   };
   const matchByContext = <C extends ContextType>(
     tList: ChildNodeType<ItBlock, C>[],
-    aList: ChildNodeType<TestAssertionStatus, C>[]
+    aList: ChildNodeType<TestAssertionStatus, C>[],
   ): MatchMethodResult<C> => {
     const results: MatchResultType<C>[] = [];
     if (tList.length === aList.length) {
-      const hasMismatch = tList.find((t, idx) => !aList[idx].match(t, matchByContextOptions));
+      const hasMismatch = tList.find(
+        (t, idx) => !aList[idx].match(t, matchByContextOptions),
+      );
       if (!hasMismatch) {
-        tList.forEach((t, idx) => results.push([t, [aList[idx]], 'match-by-context']));
+        tList.forEach((t, idx) =>
+          results.push([t, [aList[idx]], 'match-by-context']),
+        );
         return { unmatchedT: [], results };
       }
     }
@@ -253,7 +317,7 @@ const ContextMatch = (): ContextMatchAlgorithm => {
     contextType: C,
     tContainer: ContainerNode<ItBlock>,
     aContainer: ContainerNode<TestAssertionStatus>,
-    onResult: (result: MatchResultType<C>) => void
+    onResult: (result: MatchResultType<C>) => void,
   ): void => {
     const results: MatchResultType<C>[] = [];
 
@@ -270,7 +334,9 @@ const ContextMatch = (): ContextMatchAlgorithm => {
     // if there is invalid location nodes, let's try to remove it from the container so we might be
     // able to match by context below
     let aList = aContainer.getChildren(contextType);
-    const invalidLocations = aList.filter((n) => n.hasEvent('invalid-location'));
+    const invalidLocations = aList.filter((n) =>
+      n.hasEvent('invalid-location'),
+    );
 
     if (invalidLocations.length > 0) {
       aList = aList.filter((n) => !n.hasEvent('invalid-location'));
@@ -295,13 +361,15 @@ const ContextMatch = (): ContextMatchAlgorithm => {
 
   const matchContainers = (
     tContainer: ContainerNode<ItBlock>,
-    aContainer: ContainerNode<TestAssertionStatus>
+    aContainer: ContainerNode<TestAssertionStatus>,
   ): TestResult[] => {
     const matchResults: TestResult[] = [];
 
-    matchChildren('data', tContainer, aContainer, (result) => matchResults.push(...handleTestBlockMatch(result)));
+    matchChildren('data', tContainer, aContainer, (result) =>
+      matchResults.push(...handleTestBlockMatch(result)),
+    );
     matchChildren('container', tContainer, aContainer, (result) =>
-      matchResults.push(...handleDescribeBlockMatch(result))
+      matchResults.push(...handleDescribeBlockMatch(result)),
     );
 
     return matchResults;
@@ -319,16 +387,21 @@ const ContextMatch = (): ContextMatchAlgorithm => {
 
   const matchFallback = (
     tContainer: ContainerNode<ItBlock>,
-    aContainer: ContainerNode<TestAssertionStatus>
+    aContainer: ContainerNode<TestAssertionStatus>,
   ): FallbackMatchResult<'data'> => {
-    const doMatch = <C extends ContextType>(type: C, onResult: (result: MatchResultType<C>) => TestResult[]) => {
+    const doMatch = <C extends ContextType>(
+      type: C,
+      onResult: (result: MatchResultType<C>) => TestResult[],
+    ) => {
       let tList = tContainer.unmatchedNodes(type);
       if (tList.length <= 0) {
         return {};
       }
 
       let aList = aContainer.unmatchedNodes(type);
-      const matched = (['by-name', 'by-location'] as ClassicMatchType[]).flatMap((matchType) => {
+      const matched = (
+        ['by-name', 'by-location'] as ClassicMatchType[]
+      ).flatMap((matchType) => {
         const matchResult = classicMatch(matchType, tList, aList);
         tList = matchResult.unmatchedT;
         return matchResult.results.flatMap(onResult);
@@ -349,7 +422,9 @@ const ContextMatch = (): ContextMatchAlgorithm => {
       return t.isMatched ? [] : handleDescribeBlockMatch(r, false);
     });
     // handle unmatched data nodes
-    const dFallback = doMatch('data', (r) => handleTestBlockMatch(r, false, false));
+    const dFallback = doMatch('data', (r) =>
+      handleTestBlockMatch(r, false, false),
+    );
 
     return {
       ...dFallback,
@@ -358,18 +433,21 @@ const ContextMatch = (): ContextMatchAlgorithm => {
   };
 
   const toUnmatchedResults = (nodes: DataNode<ItBlock>[]): TestResult[] =>
-    nodes.flatMap((t) => handleTestBlockMatch([t, [], 'match-failed'], true, false));
+    nodes.flatMap((t) =>
+      handleTestBlockMatch([t, [], 'match-failed'], true, false),
+    );
 
   const match = (
     tContainer: ContainerNode<ItBlock>,
     aContainer: ContainerNode<TestAssertionStatus>,
-    messaging: ReturnType<typeof createMessaging>
+    messaging: ReturnType<typeof createMessaging>,
   ): TestResult[] => {
     let matched = matchContainers(tContainer, aContainer);
     const fallback = matchFallback(tContainer, aContainer);
 
     matched = fallback.matched ? matched.concat(fallback.matched) : matched;
-    const unmatchedResults = fallback.unmatchedT && toUnmatchedResults(fallback.unmatchedT);
+    const unmatchedResults =
+      fallback.unmatchedT && toUnmatchedResults(fallback.unmatchedT);
 
     // reporting
     if (unmatchedResults && unmatchedResults.length > 0) {
@@ -403,10 +481,12 @@ export const matchTestAssertions = (
   fileName: string,
   sourceRoot: ParsedNode,
   assertions: TestAssertionStatus[] | ContainerNode<TestAssertionStatus>,
-  verbose = false
+  verbose = false,
 ): TestResult[] => {
   const tContainer = buildSourceContainer(sourceRoot);
-  const aContainer = Array.isArray(assertions) ? buildAssertionContainer(assertions) : assertions;
+  const aContainer = Array.isArray(assertions)
+    ? buildAssertionContainer(assertions)
+    : assertions;
 
   const messaging = createMessaging(fileName, verbose);
   return match(tContainer, aContainer, messaging);

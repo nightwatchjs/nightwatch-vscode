@@ -14,9 +14,13 @@ import { NightwatchTestProviderContext } from './testProviderContext';
 // TODO: Move to DebugCodelens file
 export type DebugTestIdentifier = string | TestIdentifier;
 
-type DebugFunction = (document: vsCodeTypes.TextDocument | string, ...ids: DebugTestIdentifier[]) => Promise<void>;
+type DebugFunction = (
+  document: vsCodeTypes.TextDocument | string,
+  ...ids: DebugTestIdentifier[]
+) => Promise<void>;
 
-export interface NightwatchExtExplorerContext extends NightwatchExtSessionContext {
+export interface NightwatchExtExplorerContext
+  extends NightwatchExtSessionContext {
   readonly testResolveProvider: TestResultProvider;
   readonly sessionEvents: NightwatchSessionEvents;
   debugTests: DebugFunction;
@@ -55,4 +59,6 @@ export interface Debuggable {
   getDebugInfo: () => { fileName: string; testNamePattern?: string };
 }
 
-export type TestItemRunRequest = NightwatchExtRequestType & { itemRun: TestItemRun };
+export type TestItemRunRequest = NightwatchExtRequestType & {
+  itemRun: TestItemRun;
+};

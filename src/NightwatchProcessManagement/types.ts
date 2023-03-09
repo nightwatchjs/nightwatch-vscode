@@ -45,7 +45,11 @@ export interface ScheduleStrategy {
 export type NightwatchProcessEvent = RunnerEvent | 'processStarting';
 
 export interface NightwatchProcessListener {
-  onEvent: (process: NightwatchProcess, event: NightwatchProcessEvent, ...args: any[]) => any;
+  onEvent: (
+    process: NightwatchProcess,
+    event: NightwatchProcessEvent,
+    ...args: any[]
+  ) => any;
 }
 
 export interface NightwatchProcessRequestCommon {
@@ -53,7 +57,11 @@ export interface NightwatchProcessRequestCommon {
   listener: NightwatchProcessListener;
 }
 
-export type NightwatchProcessType = 'all-tests' | 'by-file' | 'by-file-test' | 'not-test';
+export type NightwatchProcessType =
+  | 'all-tests'
+  | 'by-file'
+  | 'by-file-test'
+  | 'not-test';
 
 export type NightwatchProcessRequestSimple =
   | {
@@ -69,9 +77,9 @@ export type NightwatchProcessRequestSimple =
       testName: string;
     }
   | {
-    type: Extract<NightwatchProcessType, 'not-test'>,
-    args: string[]
-  };
+      type: Extract<NightwatchProcessType, 'not-test'>;
+      args: string[];
+    };
 
 export type VsCodeItemRun = {
   itemRun?: {
@@ -81,7 +89,9 @@ export type VsCodeItemRun = {
   };
 };
 
-export type NightwatchProcessRequest = NightwatchProcessRequestSimple & NightwatchProcessRequestCommon & VsCodeItemRun;
+export type NightwatchProcessRequest = NightwatchProcessRequestSimple &
+  NightwatchProcessRequestCommon &
+  VsCodeItemRun;
 
 export interface NightwatchProcessInfo {
   readonly id: string;

@@ -7,51 +7,65 @@ import {
   NightwatchProcessManager,
 } from '../NightwatchProcessManagement';
 import { RunTestListener, ListTestFileListener } from './processListener';
-import { ListenerSession, NightwatchExtProcessContext, NightwatchExtRequestType, ProcessSession } from './types';
+import {
+  ListenerSession,
+  NightwatchExtProcessContext,
+  NightwatchExtRequestType,
+  ProcessSession,
+} from './types';
 
-const ProcessScheduleStrategy: Record<NightwatchProcessType, ScheduleStrategy> = {
-  'all-tests': {
-    queue: 'blocking',
-    dedup: {
-      filterByStatus: ['pending'],
+const ProcessScheduleStrategy: Record<NightwatchProcessType, ScheduleStrategy> =
+  {
+    'all-tests': {
+      queue: 'blocking',
+      dedup: {
+        filterByStatus: ['pending'],
+      },
     },
-  },
-  'by-file': {
-    queue: 'blocking',
-    dedup: {
-      filterByStatus: ['pending'],
+    'by-file': {
+      queue: 'blocking',
+      dedup: {
+        filterByStatus: ['pending'],
+      },
     },
-  },
-  'by-file-test': {
-    queue: 'blocking',
-    dedup: {
-      filterByStatus: ['pending'],
-      filterByContent: true,
+    'by-file-test': {
+      queue: 'blocking',
+      dedup: {
+        filterByStatus: ['pending'],
+        filterByContent: true,
+      },
     },
-  },
-  'not-test': {
-    queue: 'non-blocking',
-    dedup: {
-      filterByStatus: ['pending'],
+    'not-test': {
+      queue: 'non-blocking',
+      dedup: {
+        filterByStatus: ['pending'],
+      },
     },
-  },
-};
+  };
 
-export const createProcessSession = (context: NightwatchExtProcessContext): ProcessSession => {
+export const createProcessSession = (
+  context: NightwatchExtProcessContext,
+): ProcessSession => {
   const nightwatchProcessManager = new NightwatchProcessManager(context);
   const logging = context.loggingFactory.create('ProcessSessionManager');
 
-  const scheduleProcess = <T extends NightwatchExtRequestType = NightwatchExtRequestType>(
-    request: T
+  const scheduleProcess = <
+    T extends NightwatchExtRequestType = NightwatchExtRequestType,
+  >(
+    request: T,
   ): NightwatchProcessInfo | undefined => {
     logging('debug', `scheduling Nightwatch Process: ${request.type}`);
     try {
       const pRequest = createProcessRequest(request);
 
-      const process = nightwatchProcessManager.scheduleNightwatchProcess(pRequest);
+      const process =
+        nightwatchProcessManager.scheduleNightwatchProcess(pRequest);
 
       if (!process) {
-        logging('warn', `request scheduling failed: ${stringifyRequest(pRequest)}`);
+        logging(
+          'warn',
+          `request scheduling failed: ${stringifyRequest(pRequest)}`,
+        );
         return;
       }
 
@@ -59,14 +73,20 @@ export const createProcessSession = (context: NightwatchExtProcessContext): Proc
 
       return process;
     } catch (error) {
-      logging('warn', `[scheduledProcess] failed to create/schedule process for`, request);
+      logging(
+        'warn',
+        `[scheduledProcess] failed to create/schedule process for`,
+        request,
+      );
       return;
     }
   };
 
   const listenerSession: ListenerSession = { context, scheduleProcess };
 
-  const createProcessRequest = (request: NightwatchExtRequestType): NightwatchProcessRequest => {
+  const createProcessRequest = (
+    request: NightwatchExtRequestType,
+  ): NightwatchProcessRequest => {
     const lSession = listenerSession;
     switch (request.type) {
       case 'all-tests':
@@ -105,7 +125,10 @@ export const createProcessSession = (context: NightwatchExtProcessContext): Proc
   // TODO: Remove this method
   const start = async (): Promise<void> => {
     if (nightwatchProcessManager.numberOfProcesses() > 0) {
-      logging('debug', `${nightwatchProcessManager.numberOfProcesses} queued, stoping all...`);
+      logging(
+        'debug',
+        `${nightwatchProcessManager.numberOfProcesses} queued, stoping all...`,
+      );
       await stop();
     }
 

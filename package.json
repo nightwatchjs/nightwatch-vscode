@@ -227,6 +227,8 @@
 		"package": "webpack --mode production --devtool hidden-source-map",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
+		"prettier": "prettier --write .",
+		"format": "npm run lint:fix && npm run prettier",
 		"test": "node ./out/test/runTest.js",
 		"pretest": "npm run compile-tests && npm run compile && npm run lint"
 	},
@@ -242,6 +244,7 @@
 		"eslint": "^8.35.0",
 		"glob": "^8.1.0",
 		"mocha": "^10.2.0",
+		"prettier": "^2.8.4",
 		"ts-loader": "^9.4.2",
 		"typescript": "4.9.5",
 		"vscode-nls": "^5.2.0",

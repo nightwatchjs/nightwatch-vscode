@@ -10,7 +10,6 @@ The Nightwatch Extension for Visual Studio Code is a powerful tool that enables 
 - [Quick Setting Panel](#quick-setting-panel): The quick settings panel gives you more control over test runs, such as running in headless mode, opening the report post-test runs, and controlling the number of parallels for your Nightwatch test runs.
 - [Environments Panel](#environments-panel): The environments panel provides a quick way to select the environment (browsers) to run your tests.
 
-
 <img width="1552" alt="Screenshot 2022-09-16 at 1 18 43 PM" src="https://user-images.githubusercontent.com/8705386/224010663-65589144-6ac8-474c-81c7-60d66f78bd48.png">
 
 ## Requirements
@@ -49,7 +48,6 @@ Installing Nightwatch with the Nightwatch Extension is simple and straightforwar
 Running and debugging tests is a breeze with the Nightwatch Extension. The user interface is intuitive and easy to use, and the powerful debugging features help you catch and fix issues quickly.
 
 ![Running test gif](https://user-images.githubusercontent.com/8705386/190579700-30e75b82-be29-4ba8-bdc6-2b669f7b8a8f.gif)
-
 
 ![Debug test gif](https://user-images.githubusercontent.com/8705386/190579636-5b68c60f-f2be-44ec-b4ab-2e6c13d5c748.gif)
 

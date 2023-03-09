@@ -1,5 +1,8 @@
 // import * as vsCodeTypes from '../types/vscodeTypes';
-import { NightwatchProcessInfo, NightwatchProcessRequestSimple } from '../NightwatchProcessManagement/types';
+import {
+  NightwatchProcessInfo,
+  NightwatchProcessRequestSimple,
+} from '../NightwatchProcessManagement/types';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
 import { LoggingFactory } from '../Logging/types';
@@ -9,7 +12,9 @@ import { NightwatchExtensionResourceSettings } from '../Settings/types';
 import { TestIdentifier } from '../TestResults/types';
 import { Settings } from '../Settings';
 
-export type GetNightwatchExtByURI = (uri: vsCodeTypes.Uri) => NightwatchExt | undefined;
+export type GetNightwatchExtByURI = (
+  uri: vsCodeTypes.Uri,
+) => NightwatchExt | undefined;
 
 export type RegisterCommand =
   | {
@@ -42,13 +47,17 @@ export type InternalRequest = {
   onResult: ListTestFilesCallback;
 };
 
-export type NightwatchExtRequestType = NightwatchProcessRequestSimple | InternalRequest;
+export type NightwatchExtRequestType =
+  | NightwatchProcessRequestSimple
+  | InternalRequest;
 
 export interface ProcessSession {
   start: () => Promise<void>;
   stop: () => Promise<void>;
-  scheduleProcess: <T extends NightwatchExtRequestType = NightwatchExtRequestType>(
-    request: T
+  scheduleProcess: <
+    T extends NightwatchExtRequestType = NightwatchExtRequestType,
+  >(
+    request: T,
   ) => NightwatchProcessInfo | undefined;
 }
 
@@ -59,7 +68,13 @@ export interface RunEventBase {
 export type NightwatchRunEvent = RunEventBase &
   (
     | { type: 'scheduled' }
-    | { type: 'data'; text: string; raw?: string; newLine?: boolean; isError?: boolean }
+    | {
+        type: 'data';
+        text: string;
+        raw?: string;
+        newLine?: boolean;
+        isError?: boolean;
+      }
     | { type: 'start' }
     | { type: 'end' }
     | { type: 'exit'; error?: string }
@@ -75,8 +90,10 @@ export type NightwatchExtProcessContext = Readonly<NightwatchProcessContextRaw>;
 
 export interface ListenerSession {
   context: NightwatchExtProcessContext;
-  scheduleProcess: <T extends NightwatchExtRequestType = NightwatchExtRequestType>(
-    request: T
+  scheduleProcess: <
+    T extends NightwatchExtRequestType = NightwatchExtRequestType,
+  >(
+    request: T,
   ) => NightwatchProcessInfo | undefined;
 }
 

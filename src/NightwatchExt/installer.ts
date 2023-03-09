@@ -1,7 +1,9 @@
 import { systemErrorMessage } from '../messaging';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
-export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<void> {
+export async function installNightwatch(
+  vscode: vsCodeTypes.VSCode,
+): Promise<void> {
   const [workspaceFolder] = vscode.workspace.workspaceFolders || [];
   const quickPickItems: vsCodeTypes.QuickPickItem[] = [];
 
@@ -15,12 +17,14 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
   const googleChrome: vsCodeTypes.QuickPickItem = {
     label: 'Google Chrome',
     picked: false,
-    detail: 'Google Chrome is a cross-platform web browser developed by Google.',
+    detail:
+      'Google Chrome is a cross-platform web browser developed by Google.',
   };
   const mozillaFirefox: vsCodeTypes.QuickPickItem = {
     label: 'Mozilla Firefox',
     picked: true,
-    detail: 'Mozilla Firefox is a free and open-source web browser developed by the Mozilla Foundation.',
+    detail:
+      'Mozilla Firefox is a free and open-source web browser developed by the Mozilla Foundation.',
   };
   const appleSafari: vsCodeTypes.QuickPickItem = {
     label: 'Apple Safari',
@@ -30,9 +34,16 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
   const microsoftEdge: vsCodeTypes.QuickPickItem = {
     label: 'Microsoft Edge',
     picked: false,
-    detail: 'Microsoft Edge is a cross-platform web browser created and developed by Microsoft.',
+    detail:
+      'Microsoft Edge is a cross-platform web browser created and developed by Microsoft.',
   };
-  quickPickItems.push(quickPickSeparator, googleChrome, mozillaFirefox, appleSafari, microsoftEdge);
+  quickPickItems.push(
+    quickPickSeparator,
+    googleChrome,
+    mozillaFirefox,
+    appleSafari,
+    microsoftEdge,
+  );
 
   const result = await vscode.window.showQuickPick(quickPickItems, {
     title: 'Install Nightwatch',
@@ -67,6 +78,9 @@ export async function installNightwatch(vscode: vsCodeTypes.VSCode): Promise<voi
 
   if (args.length > 0) {
     terminal.show();
-    terminal.sendText(`npm init nightwatch@latest . --yes -- --yes ${args.join(' ')}`, true);
+    terminal.sendText(
+      `npm init nightwatch@latest . --yes -- --yes ${args.join(' ')}`,
+      true,
+    );
   }
 }

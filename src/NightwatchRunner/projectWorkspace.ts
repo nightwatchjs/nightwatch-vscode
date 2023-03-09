@@ -61,7 +61,7 @@ export default class ProjectWorkspace {
     debug?: boolean,
     nodeEnv?: { [key: string]: string | undefined },
     shell?: string,
-    outputFileSuffix?: string
+    outputFileSuffix?: string,
   ) {
     this.testPath = testPath;
     this.pathToConfig = pathToConfig;
@@ -79,7 +79,9 @@ export default class ProjectWorkspace {
  * @param config
  * @returns {ProjectWorkspace}
  */
-export const createProjectWorkspace = (config: ProjectWorkspaceConfig): ProjectWorkspace => {
+export const createProjectWorkspace = (
+  config: ProjectWorkspaceConfig,
+): ProjectWorkspace => {
   return new ProjectWorkspace(
     config.testPath,
     config.pathToConfig,
@@ -87,6 +89,6 @@ export const createProjectWorkspace = (config: ProjectWorkspaceConfig): ProjectW
     config.debug,
     config.nodeEnv,
     config.shell,
-    config.outputFileSuffix
+    config.outputFileSuffix,
   );
 };

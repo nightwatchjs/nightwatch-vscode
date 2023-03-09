@@ -8,9 +8,17 @@ import { TestReconciliationState } from './TestResults/matchByContext';
 import { TestResult } from './TestResults/types';
 import { TestFileAssertionStatus } from './NightwatchRunner';
 
-function createDiagnosticWithRange(message: string, range: vscode.Range, testName?: string): vscode.Diagnostic {
+function createDiagnosticWithRange(
+  message: string,
+  range: vscode.Range,
+  testName?: string,
+): vscode.Diagnostic {
   const msg = testName ? `${testName}\n-----\n${message}` : message;
-  const diag = new vscode.Diagnostic(range, msg, vscode.DiagnosticSeverity.Error);
+  const diag = new vscode.Diagnostic(
+    range,
+    msg,
+    vscode.DiagnosticSeverity.Error,
+  );
   diag.source = 'Nightwatch';
   return diag;
 }
@@ -20,10 +28,14 @@ function createDiagnostic(
   lineNumber: number,
   name?: string,
   startCol = 0,
-  endCol = Number.MAX_SAFE_INTEGER
+  endCol = Number.MAX_SAFE_INTEGER,
 ): vscode.Diagnostic {
   const line = lineNumber > 0 ? lineNumber - 1 : 0;
-  return createDiagnosticWithRange(message, new vscode.Range(line, startCol, line, endCol), name);
+  return createDiagnosticWithRange(
+    message,
+    new vscode.Range(line, startCol, line, endCol),
+    name,
+  );
 }
 
 // update diagnostics for the active editor
@@ -31,7 +43,7 @@ function createDiagnostic(
 export function updateCurrentDiagnostics(
   testResults: TestResult[],
   collection: vscode.DiagnosticCollection,
-  editor: vscode.TextEditor
+  editor: vscode.TextEditor,
 ): void {
   const uri = editor.document.uri;
 
@@ -47,7 +59,11 @@ export function updateCurrentDiagnostics(
         const line = r.lineNumberOfError || r.end.line;
         const textLine = editor.document.lineAt(line);
         const name = r.identifier.title;
-        return createDiagnosticWithRange(r.shortMessage || r.terseMessage || 'unknown errorr', textLine.range, name);
+        return createDiagnosticWithRange(
+          r.shortMessage || r.terseMessage || 'unknown errorr',
+          textLine.range,
+          name,
+        );
       });
     list.push(...diagnostics);
     return list;
@@ -64,24 +80,42 @@ export function updateCurrentDiagnostics(
 
 export function updateDiagnostics(
   testResults: TestFileAssertionStatus[],
-  collection: vscode.DiagnosticCollection
+  collection: vscode.DiagnosticCollection,
 ): void {
-  function addTestFileError(result: TestFileAssertionStatus, uri: vscode.Uri): void {
-    const diag = createDiagnostic(result.message || 'test file error', 0, undefined, 0, 0);
+  function addTestFileError(
+    result: TestFileAssertionStatus,
+    uri: vscode.Uri,
+  ): void {
+    const diag = createDiagnostic(
+      result.message || 'test file error',
+      0,
+      undefined,
+      0,
+      0,
+    );
     collection.set(uri, [diag]);
   }
 
-  function addTestsError(result: TestFileAssertionStatus, uri: vscode.Uri): void {
+  function addTestsError(
+    result: TestFileAssertionStatus,
+    uri: vscode.Uri,
+  ): void {
     if (!result.assertions) {
       return;
     }
-    const asserts = result.assertions.filter((a) => a.status === TestReconciliationState.KnownFail);
+    const asserts = result.assertions.filter(
+      (a) => a.status === TestReconciliationState.KnownFail,
+    );
     collection.set(
       uri,
       asserts.map((assertion) => {
         const name = assertion.title;
-        return createDiagnostic(assertion.shortMessage || assertion.message, assertion.line ?? -1, name);
-      })
+        return createDiagnostic(
+          assertion.shortMessage || assertion.message,
+          assertion.line ?? -1,
+          name,
+        );
+      }),
     );
   }
 
@@ -113,10 +147,14 @@ export function updateDiagnostics(
   });
 }
 
-export function resetDiagnostics(diagnostics: vscode.DiagnosticCollection): void {
+export function resetDiagnostics(
+  diagnostics: vscode.DiagnosticCollection,
+): void {
   diagnostics.clear();
 }
-export function failedSuiteCount(diagnostics: vscode.DiagnosticCollection): number {
+export function failedSuiteCount(
+  diagnostics: vscode.DiagnosticCollection,
+): number {
   let sum = 0;
   diagnostics.forEach(() => sum++);
   return sum;

@@ -1,12 +1,16 @@
 import { ItBlock, ParsedRange } from 'jest-editor-support';
-import { Location, TestAssertionStatus, TestReconciliationStateType } from '../NightwatchRunner';
+import {
+  Location,
+  TestAssertionStatus,
+  TestReconciliationStateType,
+} from '../NightwatchRunner';
 import { createMessaging } from './matchByContext';
 import { ContainerNode, DataNode, IsMatchedEvents } from './matchNode';
 import { createTestResultEvents } from './testResultEvents';
 
 export type TestResultEvents = ReturnType<typeof createTestResultEvents>;
 
-export type IsMatchedEvent = typeof IsMatchedEvents[number];
+export type IsMatchedEvent = (typeof IsMatchedEvents)[number];
 export type MatchEvent =
   | IsMatchedEvent
   | 'match-failed'
@@ -41,7 +45,9 @@ export interface MatchOptions {
 }
 
 export type NodeType<T> = ContainerNode<T> | DataNode<T>;
-export type ChildNodeType<T, C extends ContextType> = C extends 'container' ? ContainerNode<T> : DataNode<T>;
+export type ChildNodeType<T, C extends ContextType> = C extends 'container'
+  ? ContainerNode<T>
+  : DataNode<T>;
 
 export type ItemNodeType = NodeType<ItBlock | TestAssertionStatus>;
 
@@ -104,7 +110,7 @@ export type MessagingInfo = {
 export type MatchResultType<C extends ContextType> = [
   ChildNodeType<ItBlock, C>,
   ChildNodeType<TestAssertionStatus, C>[],
-  MatchEvent
+  MatchEvent,
 ];
 
 export interface MatchMethodResult<C extends ContextType> {
@@ -124,7 +130,7 @@ export interface ContextMatchAlgorithm {
   match: (
     tContainer: ContainerNode<ItBlock>,
     aContainer: ContainerNode<TestAssertionStatus>,
-    messaging: ReturnType<typeof createMessaging>
+    messaging: ReturnType<typeof createMessaging>,
   ) => TestResult[];
 }
 
