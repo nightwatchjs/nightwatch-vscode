@@ -11,7 +11,7 @@ The Nightwatch Extension for Visual Studio Code is a powerful tool that enables 
 - [Environments Panel](#environments-panel): The environments panel provides a quick way to select the environment (browsers) to run your tests.
 
 
-<img width="1552" alt="Screenshot 2022-09-16 at 1 18 43 PM" src="https://user-images.githubusercontent.com/8705386/224007013-f91072d3-ce8f-409f-8eea-096bd087fe40.png">
+<img width="1552" alt="Screenshot 2022-09-16 at 1 18 43 PM" src="https://user-images.githubusercontent.com/8705386/224010663-65589144-6ac8-474c-81c7-60d66f78bd48.png">
 
 ## Requirements
 
