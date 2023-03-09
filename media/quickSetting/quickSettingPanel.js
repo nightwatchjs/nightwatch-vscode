@@ -10,13 +10,19 @@
   for (const input of document.querySelectorAll('input[type=checkbox]')) {
     input.addEventListener('change', (event) => {
       const commandName = event.target.getAttribute('name');
-      vscode.postMessage({ method: 'toggle', params: { command: commandName } });
+      vscode.postMessage({
+        method: 'toggle',
+        params: { command: commandName },
+      });
     });
   }
 
   parallelsInputElement.addEventListener('change', (event) => {
     const commandName = event.target.getAttribute('name');
-    vscode.postMessage({ method: 'change', params: { command: commandName, value: event.target.value } });
+    vscode.postMessage({
+      method: 'change',
+      params: { command: commandName, value: event.target.value },
+    });
   });
 
   window.addEventListener('message', (event) => {

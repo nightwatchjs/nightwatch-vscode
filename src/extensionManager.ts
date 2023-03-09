@@ -3,7 +3,11 @@ import { QuickSettingPanel } from './Panels/quickSettingPanel';
 import * as vsCodeTypes from './types/vscodeTypes';
 
 import { NightwatchExt } from './NightwatchExt';
-import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './NightwatchExt/types';
+import {
+  CommandType,
+  GetNightwatchExtByURI,
+  RegisterCommand,
+} from './NightwatchExt/types';
 import { extensionName } from './appGlobals';
 import { DebugConfigurationProvider } from './NightwatchExt/debugConfigurationProvider';
 
@@ -23,7 +27,10 @@ export class ExtensionManager {
   private extByWorkspace: Map<string, NightwatchExt> = new Map();
   private nwConfPath!: string;
 
-  constructor(vscode: vsCodeTypes.VSCode, context: vsCodeTypes.ExtensionContext) {
+  constructor(
+    vscode: vsCodeTypes.VSCode,
+    context: vsCodeTypes.ExtensionContext,
+  ) {
     this._vscode = vscode;
     this.context = context;
     this.debugConfigurationProvider = new DebugConfigurationProvider();
@@ -45,17 +52,21 @@ export class ExtensionManager {
       this._vscode,
       workspaceFolder,
       this.debugConfigurationProvider,
-      this.context
+      this.context,
     );
 
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
     // updating workspace state
-    await this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((res) => {
-      delete __non_webpack_require__.cache[__non_webpack_require__.resolve(res[0].path)];
-      const nwConfig = require(/* webpackIgnore: true */ res[0].path);
-      const workspaceState = this.context.workspaceState;
-      workspaceState.update('nwConfig', nwConfig);
-    });
+    await this._vscode.workspace
+      .findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1)
+      .then((res) => {
+        delete __non_webpack_require__.cache[
+          __non_webpack_require__.resolve(res[0].path)
+        ];
+        const nwConfig = require(/* webpackIgnore: true */ res[0].path);
+        const workspaceState = this.context.workspaceState;
+        workspaceState.update('nwConfig', nwConfig);
+      });
 
     nightwatchExt.startSession();
   }
@@ -76,35 +87,45 @@ export class ExtensionManager {
     }
   };
 
-  registerCommand(command: RegisterCommand, thisArg?: any): vsCodeTypes.Disposable {
+  registerCommand(
+    command: RegisterCommand,
+    thisArg?: any,
+  ): vsCodeTypes.Disposable {
     const vscode = this._vscode;
     const commandName = `${commandPrefix[command.type]}.${command.name}`;
 
     switch (command.type) {
       case 'all-workspaces':
-        return vscode.commands.registerCommand(commandName, async (...args: any[]) => {
-          vscode.workspace.workspaceFolders?.forEach((workspace) => {
-            const extension = this.getByExtName(workspace.name);
+        return vscode.commands.registerCommand(
+          commandName,
+          async (...args: any[]) => {
+            vscode.workspace.workspaceFolders?.forEach((workspace) => {
+              const extension = this.getByExtName(workspace.name);
 
-            if (extension) {
-              command.callback(extension, ...args);
-            }
-          });
-        });
+              if (extension) {
+                command.callback(extension, ...args);
+              }
+            });
+          },
+        );
       case 'active-text-editor':
-        return vscode.commands.registerCommand(commandName, async (...args: any[]) => {
-          const extension = await this.selectExtension();
-          if (extension) {
-            command.callback.call(thisArg, extension, ...args);
-          }
-        });
+        return vscode.commands.registerCommand(
+          commandName,
+          async (...args: any[]) => {
+            const extension = await this.selectExtension();
+            if (extension) {
+              command.callback.call(thisArg, extension, ...args);
+            }
+          },
+        );
     }
   }
 
   async selectExtension(): Promise<NightwatchExt | undefined> {
     const vscode = this._vscode;
     const workspace =
-      vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length <= 1
+      vscode.workspace.workspaceFolders &&
+      vscode.workspace.workspaceFolders.length <= 1
         ? vscode.workspace.workspaceFolders[0]
         : await vscode.window.showWorkspaceFolderPick();
 
@@ -128,17 +149,25 @@ export class ExtensionManager {
   onDidChangeConfiguration(event: vsCodeTypes.ConfigurationChangeEvent): void {
     const vscode = this._vscode;
 
-    if (event.affectsConfiguration('nightwatch') && event.affectsConfiguration('nightwatch.settings')) {
+    if (
+      event.affectsConfiguration('nightwatch') &&
+      event.affectsConfiguration('nightwatch.settings')
+    ) {
       vscode.workspace.workspaceFolders?.forEach((workspaceFolder) => {
         const nightwatchExt = this.getByExtName(workspaceFolder.name);
-        if (nightwatchExt && event.affectsConfiguration('nightwatch', workspaceFolder.uri)) {
+        if (
+          nightwatchExt &&
+          event.affectsConfiguration('nightwatch', workspaceFolder.uri)
+        ) {
           nightwatchExt.triggerUpdateSettings();
         }
       });
     }
   }
 
-  onDidChangeWorkspaceFolders(e: vsCodeTypes.WorkspaceFoldersChangeEvent): void {
+  onDidChangeWorkspaceFolders(
+    e: vsCodeTypes.WorkspaceFoldersChangeEvent,
+  ): void {
     e.added.forEach(this.register, this);
     e.removed.forEach(this.unregister, this);
   }
@@ -179,8 +208,13 @@ export class ExtensionManager {
     }
   }
 
-  private onFilesChange(files: readonly vsCodeTypes.Uri[], handler: (ext: NightwatchExt) => void) {
-    const exts = files.map((f) => this.getByDocumentUri(f)).filter((ext) => ext != null) as NightwatchExt[];
+  private onFilesChange(
+    files: readonly vsCodeTypes.Uri[],
+    handler: (ext: NightwatchExt) => void,
+  ) {
+    const exts = files
+      .map((f) => this.getByDocumentUri(f))
+      .filter((ext) => ext != null) as NightwatchExt[];
     const set = new Set<NightwatchExt>(exts);
     set.forEach(handler);
   }
@@ -205,7 +239,7 @@ export class ExtensionManager {
     const vscode = this._vscode;
 
     const watcher = vscode.workspace.createFileSystemWatcher(
-      new vscode.RelativePattern(wsFolder, '**/*nightwatch*.conf.{ts,js,cjs}')
+      new vscode.RelativePattern(wsFolder, '**/*nightwatch*.conf.{ts,js,cjs}'),
     );
 
     watcher.onDidChange((uri) => {
@@ -240,18 +274,21 @@ export class ExtensionManager {
 
   activate(): void {
     const vscode = this._vscode;
-    const vscodeActiveDocumentUri = vscode.window.activeTextEditor?.document.uri;
+    const vscodeActiveDocumentUri =
+      vscode.window.activeTextEditor?.document.uri;
 
-    vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((value) => {
-      if (value.length > 0) {
-        vscode.workspace.workspaceFolders?.forEach((ws) => {
-          const ext = this.extByWorkspace.get(ws.name);
-          if (ext) {
-            ext.updateTestFileList();
-          }
-        });
-      }
-    });
+    vscode.workspace
+      .findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1)
+      .then((value) => {
+        if (value.length > 0) {
+          vscode.workspace.workspaceFolders?.forEach((ws) => {
+            const ext = this.extByWorkspace.get(ws.name);
+            if (ext) {
+              ext.updateTestFileList();
+            }
+          });
+        }
+      });
 
     if (vscodeActiveDocumentUri) {
       const extension = this.getByDocumentUri(vscodeActiveDocumentUri);

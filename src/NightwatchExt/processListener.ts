@@ -6,7 +6,11 @@ import { NightwatchProcess } from '../NightwatchProcessManagement';
 import { NightwatchProcessEvent } from '../NightwatchProcessManagement';
 import * as vsCodeTypes from '../types/vscodeTypes';
 import { cleanAnsi, getUniqueTestsList } from './helper';
-import { ListenerSession, ListTestFilesCallback, NightwatchRunEvent } from './types';
+import {
+  ListenerSession,
+  ListTestFilesCallback,
+  NightwatchRunEvent,
+} from './types';
 
 const POSSIBLE_DRIVER_ERR_REGEX = /([a-zA-z]+)driver cannot be found/im;
 
@@ -30,7 +34,11 @@ export class AbstractProcessListener {
     return 'AbstractProcessListener';
   }
 
-  onEvent(nightwatchProcess: NightwatchProcess, event: NightwatchProcessEvent, ...args: unknown[]): void {
+  onEvent(
+    nightwatchProcess: NightwatchProcess,
+    event: NightwatchProcessEvent,
+    ...args: unknown[]
+  ): void {
     switch (event) {
       case 'executableOutput': {
         const str = args[0] as string;
@@ -52,7 +60,11 @@ export class AbstractProcessListener {
 
       case 'processExit': {
         const [code, signal] = args as [number | null, string | null];
-        this.onProcessExit(nightwatchProcess, code ?? undefined, signal ?? undefined);
+        this.onProcessExit(
+          nightwatchProcess,
+          code ?? undefined,
+          signal ?? undefined,
+        );
         break;
       }
 
@@ -63,7 +75,11 @@ export class AbstractProcessListener {
 
       case 'processClose': {
         const [code, signal] = args as [number | null, string | null];
-        this.onProcessClose(nightwatchProcess, code ?? undefined, signal ?? undefined);
+        this.onProcessClose(
+          nightwatchProcess,
+          code ?? undefined,
+          signal ?? undefined,
+        );
         break;
       }
 
@@ -74,12 +90,20 @@ export class AbstractProcessListener {
       }
 
       default:
-        this.logging('warn', `received unexpected event "${event}" for process:`, nightwatchProcess.request);
+        this.logging(
+          'warn',
+          `received unexpected event "${event}" for process:`,
+          nightwatchProcess.request,
+        );
     }
   }
 
   // TODO: remove _raw if not used
-  protected onExecutableOutput(process: NightwatchProcess, data: string, _raw: string): void {
+  protected onExecutableOutput(
+    process: NightwatchProcess,
+    data: string,
+    _raw: string,
+  ): void {
     this.logging('debug', `${process.request.type} onExecutableOutput:`, data);
   }
 
@@ -88,11 +112,19 @@ export class AbstractProcessListener {
     this.logging('debug', `${process.request.type} onExecutableJSON:`, data);
   }
 
-  protected onExecutableStdErr(process: NightwatchProcess, data: string, _raw: string): void {
+  protected onExecutableStdErr(
+    process: NightwatchProcess,
+    data: string,
+    _raw: string,
+  ): void {
     this.logging('debug', `${process.request.type} onExecutableStdErr:`, data);
   }
 
-  protected onProcessExit(process: NightwatchProcess, code?: number, signal?: string): void {
+  protected onProcessExit(
+    process: NightwatchProcess,
+    code?: number,
+    signal?: string,
+  ): void {
     // code = 1 is general error, usually mean the command emit error, which should already handled by other event processing, for example when Nightwatch has failed tests.
     // However, error beyond 1, usually means some error outside of the command it is trying to execute, so reporting here for debugging purpose
     // see shell error code: https://www.linuxjournal.com/article/10844
@@ -102,7 +134,11 @@ export class AbstractProcessListener {
     }
   }
 
-  protected onProcessClose(_process: NightwatchProcess, _code?: number, _signal?: string): void {
+  protected onProcessClose(
+    _process: NightwatchProcess,
+    _code?: number,
+    _signal?: string,
+  ): void {
     // no default behavior...
   }
 
@@ -111,7 +147,11 @@ export class AbstractProcessListener {
     this.logging('debug', `${process.request.type} onProcessStarting`);
   }
 
-  protected onTerminalError(process: NightwatchProcess, data: string, _raw: string): void {
+  protected onTerminalError(
+    process: NightwatchProcess,
+    data: string,
+    _raw: string,
+  ): void {
     this.logging('error', `${process.request.type} onTerminalError:`, data);
   }
 
@@ -147,7 +187,11 @@ export class RunTestListener extends AbstractProcessListener {
   }
 
   //=== event handlers ===
-  protected onExecutableStdErr(process: NightwatchProcess, message: string, raw: string): void {
+  protected onExecutableStdErr(
+    process: NightwatchProcess,
+    message: string,
+    raw: string,
+  ): void {
     if (message.length <= 0) {
       return;
     }
@@ -163,7 +207,11 @@ export class RunTestListener extends AbstractProcessListener {
     this.onRunEvent.fire({ type: 'data', process, text: message, raw });
   }
 
-  protected onExecutableOutput(process: NightwatchProcess, output: string, raw: string): void {
+  protected onExecutableOutput(
+    process: NightwatchProcess,
+    output: string,
+    raw: string,
+  ): void {
     if (!(output.length <= 0)) {
       this.onRunEvent.fire({ type: 'data', process, text: output, raw });
     }
@@ -174,8 +222,19 @@ export class RunTestListener extends AbstractProcessListener {
     this.session.context.updateWithData(data, process);
   }
 
-  protected onTerminalError(process: NightwatchProcess, data: string, raw: string): void {
-    this.onRunEvent.fire({ type: 'data', process, text: data, raw, newLine: true, isError: true });
+  protected onTerminalError(
+    process: NightwatchProcess,
+    data: string,
+    raw: string,
+  ): void {
+    this.onRunEvent.fire({
+      type: 'data',
+      process,
+      text: data,
+      raw,
+      newLine: true,
+      isError: true,
+    });
   }
 
   protected onProcessExit(_process: NightwatchProcess): void {
@@ -190,9 +249,14 @@ export class RunTestListener extends AbstractProcessListener {
         ? systemErrorMessage(
             vscode,
             `${this.driverName}Driver cannot be found in the current project.`,
-            this.setupDriverInstallationAction(`${this.driverName.toLowerCase()}driver`)
+            this.setupDriverInstallationAction(
+              `${this.driverName.toLowerCase()}driver`,
+            ),
           )
-        : systemErrorMessage(vscode, `${this.driverName}Driver cannot be found in the current project.`);
+        : systemErrorMessage(
+            vscode,
+            `${this.driverName}Driver cannot be found in the current project.`,
+          );
     }
 
     this.onRunEvent.fire({ type: 'exit', process });
@@ -213,7 +277,10 @@ export class ListTestFileListener extends AbstractProcessListener {
     this.onResult = onResult;
   }
 
-  protected onExecutableOutput(_process: NightwatchProcess, data: string): void {
+  protected onExecutableOutput(
+    _process: NightwatchProcess,
+    data: string,
+  ): void {
     this.buffer += data;
   }
 
@@ -226,7 +293,9 @@ export class ListTestFileListener extends AbstractProcessListener {
 
     try {
       // TODO: Handle empty string
-      const testFileList: string[] = getUniqueTestsList(JSON5.parse(this.buffer.toString()));
+      const testFileList: string[] = getUniqueTestsList(
+        JSON5.parse(this.buffer.toString()),
+      );
       if (!testFileList || testFileList.length === 0) {
         // no test file is probably all right
         this.logging('debug', 'no test file is found');
@@ -245,7 +314,11 @@ export class ListTestFileListener extends AbstractProcessListener {
     }
   }
 
-  protected onProcessExit(process: NightwatchProcess, code?: number, signal?: string): void {
+  protected onProcessExit(
+    process: NightwatchProcess,
+    code?: number,
+    signal?: string,
+  ): void {
     // Note: will not fire 'exit' event, as the output is reported via the onResult() callback
     super.onProcessExit(process, code, signal);
     if (super.isProcessError(code)) {

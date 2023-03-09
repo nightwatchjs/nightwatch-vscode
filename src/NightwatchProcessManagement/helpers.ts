@@ -12,28 +12,43 @@ export const stringifyRequest = (request: NightwatchProcessRequest): string => {
   return JSON.stringify(request, replacer);
 };
 
-export const isDup = (task: Task<NightwatchProcess>, request: NightwatchProcessRequest): boolean => {
+export const isDup = (
+  task: Task<NightwatchProcess>,
+  request: NightwatchProcessRequest,
+): boolean => {
   if (!request.schedule.dedup) {
     return false;
   }
   const process = task.data;
   const predicate: TaskPredicate = request.schedule.dedup;
 
-  if (predicate.filterByStatus && !predicate.filterByStatus.includes(task.status)) {
+  if (
+    predicate.filterByStatus &&
+    !predicate.filterByStatus.includes(task.status)
+  ) {
     return false;
   }
 
-  if (predicate.filterByContent !== false && !isRequestEqual(process.request, request)) {
+  if (
+    predicate.filterByContent !== false &&
+    !isRequestEqual(process.request, request)
+  ) {
     return false;
   }
 
   return true;
 };
 
-export const isRequestEqual = (request1: NightwatchProcessRequest, request2: NightwatchProcessRequest): boolean => {
+export const isRequestEqual = (
+  request1: NightwatchProcessRequest,
+  request2: NightwatchProcessRequest,
+): boolean => {
   switch (request1.type) {
     case 'by-file':
-      return request1.type === request2.type && request1.testFileName === request2.testFileName;
+      return (
+        request1.type === request2.type &&
+        request1.testFileName === request2.testFileName
+      );
     case 'by-file-test':
       return (
         request1.type === request2.type &&

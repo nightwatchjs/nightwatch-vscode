@@ -5,11 +5,11 @@ import ProjectWorkspace from './projectWorkspace';
 
 function stringifyArgs(args: string[]): string[] {
   return args.map((arg) => {
-    if (!arg.includes("--")) {
-      return `${isWindows ? `"${arg}"`: JSON.stringify(arg) }`;
+    if (!arg.includes('--')) {
+      return `${isWindows ? `"${arg}"` : JSON.stringify(arg)}`;
     }
     return arg;
-  });  
+  });
 }
 
 /**
@@ -19,7 +19,11 @@ function stringifyArgs(args: string[]): string[] {
  * @param args
  * @returns
  */
-export const createProcess = (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging): ChildProcess => {
+export const createProcess = (
+  projectWorkspace: ProjectWorkspace,
+  args: string[],
+  logging: Logging,
+): ChildProcess => {
   const runtimeExecutable = projectWorkspace.nightwatchCommandLine;
 
   if (projectWorkspace.pathToConfig) {
@@ -32,12 +36,20 @@ export const createProcess = (projectWorkspace: ProjectWorkspace, args: string[]
   const spawnOptions = {
     cwd: projectWorkspace.testPath,
     env,
-    shell: typeof projectWorkspace.shell === 'string' && projectWorkspace.shell ? projectWorkspace.shell : true,
+    shell:
+      typeof projectWorkspace.shell === 'string' && projectWorkspace.shell
+        ? projectWorkspace.shell
+        : true,
     detached: process.platform !== 'win32',
   };
 
   if (projectWorkspace.debug) {
-    logging('debug', `spawning process using command=${command}\nOptions: ${JSON.stringify(spawnOptions)}`);
+    logging(
+      'debug',
+      `spawning process using command=${command}\nOptions: ${JSON.stringify(
+        spawnOptions,
+      )}`,
+    );
   }
 
   return spawn(command, [], spawnOptions);

@@ -32,7 +32,11 @@ export default class Runner extends EventEmitter {
   workspace: ProjectWorkspace;
   options: Options;
   outputPath: string;
-  _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
+  _createProcess: (
+    projectWorkspace: ProjectWorkspace,
+    args: string[],
+    logging: Logging,
+  ) => ChildProcess;
   private exited: boolean;
   private settings: NightwatchExtensionResourceSettings;
   private nightwatchSettings: Settings;
@@ -44,14 +48,19 @@ export default class Runner extends EventEmitter {
     settings: NightwatchExtensionResourceSettings,
     nightwatchSettings: Settings,
     token?: vsCodeTypes.CancellationToken,
-    options?: Options
+    options?: Options,
   ) {
     super();
 
     this._createProcess = createProcess;
     this.workspace = workspace;
     this.options = options || { reporter: options!.reporter };
-    this.outputPath = path.join(tmpdir(), `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`);
+    this.outputPath = path.join(
+      tmpdir(),
+      `nightwatch_runner_${
+        this.workspace.outputFileSuffix || ''
+      }_${Date.now()}`,
+    );
     this.exited = false;
     this.logging = logger.create('Runner');
     this.settings = settings;
@@ -60,11 +69,24 @@ export default class Runner extends EventEmitter {
   }
 
   getArgs(): string[] {
-    const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
-    const headlessMode = this.nightwatchSettings.get<boolean>(`quickSettings.headlessMode`);
-    const openReport = this.nightwatchSettings.get<boolean>(`quickSettings.openReport`);
-    const environment = this.nightwatchSettings.get<string>(`quickSettings.environments`);
-    const parallels = this.nightwatchSettings.get<number>(`quickSettings.parallels`);
+    const args = [
+      '--reporter',
+      this.options.reporter,
+      '--output',
+      this.outputPath,
+    ];
+    const headlessMode = this.nightwatchSettings.get<boolean>(
+      `quickSettings.headlessMode`,
+    );
+    const openReport = this.nightwatchSettings.get<boolean>(
+      `quickSettings.openReport`,
+    );
+    const environment = this.nightwatchSettings.get<string>(
+      `quickSettings.environments`,
+    );
+    const parallels = this.nightwatchSettings.get<number>(
+      `quickSettings.parallels`,
+    );
 
     this.logging('debug', `JSON output location: ${this.outputPath}`);
 
@@ -101,11 +123,11 @@ export default class Runner extends EventEmitter {
 
     this.token?.onCancellationRequested(() => {
       if (this.childProcess) {
-       this.killProcess(this.childProcess, this.childProcess.pid!);
+        this.killProcess(this.childProcess, this.childProcess.pid!);
       }
     });
     if (this.token?.isCancellationRequested && this.childProcess) {
-     this.killProcess(this.childProcess, this.childProcess.pid!);
+      this.killProcess(this.childProcess, this.childProcess.pid!);
     }
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
@@ -117,19 +139,25 @@ export default class Runner extends EventEmitter {
       this._parseOutput(data, true, this.logging);
     });
 
-    this.childProcess.on('exit', (code: number | null, signal: string | null) => {
-      this.exited = true;
+    this.childProcess.on(
+      'exit',
+      (code: number | null, signal: string | null) => {
+        this.exited = true;
 
-      this.emit('processExit', code, signal);
-    });
+        this.emit('processExit', code, signal);
+      },
+    );
 
     this.childProcess.on('error', (error: Error) => {
       this.emit('terminalError', `Process failed: ${error.message}`);
     });
 
-    this.childProcess.on('close', (code: number | null, signal: string | null) => {
-      this.emit('processClose', code, signal);
-    });
+    this.childProcess.on(
+      'close',
+      (code: number | null, signal: string | null) => {
+        this.emit('processClose', code, signal);
+      },
+    );
   }
 
   closeProcess() {
@@ -177,7 +205,8 @@ export default class Runner extends EventEmitter {
   }
 
   findOutputType(data: Buffer): OutputType {
-    const noTestRegex = /No test source specified, please check "src_folders" config/;
+    const noTestRegex =
+      /No test source specified, please check "src_folders" config/;
     const testResultsRegex = /Wrote [a-zA-Z]+ report file to:/;
 
     const checks = [
@@ -196,7 +225,7 @@ export default class Runner extends EventEmitter {
     } catch (error) {
       this.logging(
         'warn',
-        `failed to kill process group, this may leave some orphan process ${childProcess.pid}, error: ${error}`
+        `failed to kill process group, this may leave some orphan process ${childProcess.pid}, error: ${error}`,
       );
       childProcess.kill();
     }

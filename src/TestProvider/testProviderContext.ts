@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import * as vsCodeTypes from '../types/vscodeTypes';
-import { NightwatchExtExplorerContext, OUTPUT_COLOR, TagIdType, TestItemData } from './types';
+import {
+  NightwatchExtExplorerContext,
+  OUTPUT_COLOR,
+  TagIdType,
+  TestItemData,
+} from './types';
 
 let showTerminal = true;
 export const _resetShowTerminal = (): void => {
@@ -21,7 +26,7 @@ export class NightwatchTestProviderContext {
   constructor(
     public readonly ext: NightwatchExtExplorerContext,
     private readonly controller: vsCodeTypes.TestController,
-    private readonly profiles: vsCodeTypes.TestRunProfile[]
+    private readonly profiles: vsCodeTypes.TestRunProfile[],
   ) {
     this.testItemData = new WeakMap();
   }
@@ -32,7 +37,7 @@ export class NightwatchTestProviderContext {
     uri: vscode.Uri,
     data: TestItemData,
     parent?: vscode.TestItem,
-    tagIds: TagIdType[] = ['run', 'debug']
+    tagIds: TagIdType[] = ['run', 'debug'],
   ): vscode.TestItem => {
     const testItem = this.controller.createTestItem(id, label, uri);
     this.testItemData.set(testItem, data);
@@ -66,20 +71,33 @@ export class NightwatchTestProviderContext {
    * @param childId id of the child item
    * @returns data of the child item, casting for easy usage but does not guarentee type safety.
    */
-  getChildData = <T extends TestItemData = TestItemData>(item: vscode.TestItem, childId: string): T | undefined => {
+  getChildData = <T extends TestItemData = TestItemData>(
+    item: vscode.TestItem,
+    childId: string,
+  ): T | undefined => {
     const cItem = item.children.get(childId);
 
     // Note: casting for easy usage but does not guarentee type safety.
     return cItem && (this.testItemData.get(cItem) as T);
   };
 
-  createTestRun = (request: vsCodeTypes.TestRunRequest, name: string): vscode.TestRun => {
+  createTestRun = (
+    request: vsCodeTypes.TestRunRequest,
+    name: string,
+  ): vscode.TestRun => {
     return this.controller.createTestRun(request, name);
   };
 
-  appendOutput = (msg: string, run: vsCodeTypes.TestRun, newLine = true, color?: OUTPUT_COLOR): void => {
+  appendOutput = (
+    msg: string,
+    run: vsCodeTypes.TestRun,
+    newLine = true,
+    color?: OUTPUT_COLOR,
+  ): void => {
     const converted = msg.replace(/\n/g, '\r\n');
-    let text = newLine ? `[${this.ext.workspace.name}]: ${converted}` : converted;
+    let text = newLine
+      ? `[${this.ext.workspace.name}]: ${converted}`
+      : converted;
     if (color) {
       text = `${COLORS[color]}${text}${COLORS['end']}`;
     }
@@ -96,5 +114,6 @@ export class NightwatchTestProviderContext {
   };
 
   // tags
-  getTag = (tagId: TagIdType): vscode.TestTag | undefined => this.profiles.find((p) => p.tag?.id === tagId)?.tag;
+  getTag = (tagId: TagIdType): vscode.TestTag | undefined =>
+    this.profiles.find((p) => p.tag?.id === tagId)?.tag;
 }

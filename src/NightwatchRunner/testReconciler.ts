@@ -1,5 +1,9 @@
-import type { TestFileAssertionStatus, TestAssertionStatus, TestReconciliationStateType } from './types';
-import { parse, StackFrame } from "stacktrace-parser";
+import type {
+  TestFileAssertionStatus,
+  TestAssertionStatus,
+  TestReconciliationStateType,
+} from './types';
+import { parse, StackFrame } from 'stacktrace-parser';
 import type { FormattedTestResults } from './types';
 
 /**
@@ -29,7 +33,10 @@ export default class TestReconciler {
       const status = this.statusToReconciliationState(file.status);
       // Create our own simpler representation
       const fileStatus: TestFileAssertionStatus = {
-        assertions: this.mapAssertions(file.modulePath, Object.entries(file.completed)),
+        assertions: this.mapAssertions(
+          file.modulePath,
+          Object.entries(file.completed),
+        ),
         file: file.modulePath,
         message: (file.lastError && file.lastError.message) || '',
         status,
@@ -51,17 +58,23 @@ export default class TestReconciler {
       const title = assertionData[0];
       const assertion = assertionData[1];
 
-      const stackErrorMessage = assertion.lastError && assertion.lastError.stack ;
+      const stackErrorMessage =
+        assertion.lastError && assertion.lastError.stack;
       let short = null;
       let line = null;
       let message = null;
       if (stackErrorMessage) {
         const parsedStacks = parse(stackErrorMessage);
-        const parsedStack = filename ? parsedStacks.find((o) => o.file === filename) : parsedStacks[0];
-        
+        const parsedStack = filename
+          ? parsedStacks.find((o) => o.file === filename)
+          : parsedStacks[0];
+
         short = (assertion.lastError && assertion.lastError.message) || '';
         line = parsedStack?.lineNumber;
-        message = this.generateStackMessage(assertion.lastError, assertion.assertions);
+        message = this.generateStackMessage(
+          assertion.lastError,
+          assertion.assertions,
+        );
       }
       return {
         title,
@@ -77,8 +90,12 @@ export default class TestReconciler {
   }
 
   generateStackMessage(lastError: any, assertions: any[]) {
-    const dataWithStackTrace = assertions.filter((assert: { stackTrace: string }) => assert.stackTrace !== '');
-    const result = dataWithStackTrace.find((data: { message: any }) => data.message === lastError.message);
+    const dataWithStackTrace = assertions.filter(
+      (assert: { stackTrace: string }) => assert.stackTrace !== '',
+    );
+    const result = dataWithStackTrace.find(
+      (data: { message: any }) => data.message === lastError.message,
+    );
     return `Failure Message:\n\t${result.failure}\n\nStack Trace:\n\t${result.stackTrace}`;
   }
 
@@ -116,12 +133,17 @@ export default class TestReconciler {
     return results ? results.assertions : null;
   }
 
-  stateForTestAssertion(file: string, name: string): TestAssertionStatus | null {
+  stateForTestAssertion(
+    file: string,
+    name: string,
+  ): TestAssertionStatus | null {
     const results = this.fileStatuses[file];
     if (!results || !results.assertions) {
       return null;
     }
-    const assertion = results.assertions.find((a: { title: any }) => a.title === name);
+    const assertion = results.assertions.find(
+      (a: { title: any }) => a.title === name,
+    );
     if (!assertion) {
       return null;
     }

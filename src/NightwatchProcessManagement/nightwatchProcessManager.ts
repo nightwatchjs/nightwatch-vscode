@@ -12,7 +12,9 @@ import {
   TaskQueue,
 } from './types';
 
-export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchProcess> {
+export class NightwatchProcessManager
+  implements TaskArrayFunctions<NightwatchProcess>
+{
   private extContext: NightwatchExtContext;
   private queues: Map<QueueType, TaskQueue<NightwatchProcess>>;
   private logging: Logging;
@@ -26,9 +28,16 @@ export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchPr
     ]);
   }
 
-  public scheduleNightwatchProcess(request: NightwatchProcessRequest): NightwatchProcessInfo | undefined {
+  public scheduleNightwatchProcess(
+    request: NightwatchProcessRequest,
+  ): NightwatchProcessInfo | undefined {
     if (this.foundDup(request)) {
-      this.logging('debug', `duplicate request found, process is not scheduled: ${stringifyRequest(request)}`);
+      this.logging(
+        'debug',
+        `duplicate request found, process is not scheduled: ${stringifyRequest(
+          request,
+        )}`,
+      );
       return;
     }
 
@@ -53,7 +62,10 @@ export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchPr
       await process.start();
       this.logging('debug', `Process ended: ${process}`);
     } catch (error) {
-      this.logging('error', `${queue.name}: process failed: ${process} ${error}`);
+      this.logging(
+        'error',
+        `${queue.name}: process failed: ${process} ${error}`,
+      );
     } finally {
       queue.remove(task);
     }
@@ -74,7 +86,9 @@ export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchPr
   public async stopAll(queueType?: QueueType): Promise<void> {
     let promises: Promise<void>[];
     if (!queueType) {
-      promises = Array.from(this.queues.keys()).map((queue) => this.stopAll(queue));
+      promises = Array.from(this.queues.keys()).map((queue) =>
+        this.stopAll(queue),
+      );
     } else {
       const queue = this.getQueue(queueType);
       promises = queue.map((task) => task.data.stop());
@@ -96,17 +110,26 @@ export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchPr
     const queue = this.getQueue(request.schedule.queue);
     const dupTasks = queue.filter((task) => isDup(task, request));
     if (dupTasks.length > 0) {
-      this.logging('debug', `found ${dupTasks.length} duplicate processes, will not schedule request:`, request);
+      this.logging(
+        'debug',
+        `found ${dupTasks.length} duplicate processes, will not schedule request:`,
+        request,
+      );
       return true;
     }
     return false;
   }
 
   private getQueues(queueType?: QueueType): TaskQueue<NightwatchProcess>[] {
-    return queueType ? [this.getQueue(queueType)] : Array.from(this.queues.values());
+    return queueType
+      ? [this.getQueue(queueType)]
+      : Array.from(this.queues.values());
   }
 
-  public map<M>(f: (task: Task<NightwatchProcess>) => M, queueType?: QueueType): M[] {
+  public map<M>(
+    f: (task: Task<NightwatchProcess>) => M,
+    queueType?: QueueType,
+  ): M[] {
     const queues = this.getQueues(queueType);
 
     return queues.reduce((list, queue) => {
@@ -115,7 +138,10 @@ export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchPr
     }, [] as M[]);
   }
 
-  public filter(f: (task: Task<NightwatchProcess>) => boolean, queueType?: QueueType): Task<NightwatchProcess>[] {
+  public filter(
+    f: (task: Task<NightwatchProcess>) => boolean,
+    queueType?: QueueType,
+  ): Task<NightwatchProcess>[] {
     const queues = this.getQueues(queueType);
 
     return queues.reduce((list, queue) => {
@@ -126,7 +152,7 @@ export class NightwatchProcessManager implements TaskArrayFunctions<NightwatchPr
 
   public find(
     f: (task: Task<NightwatchProcess>) => boolean,
-    queueType?: QueueType
+    queueType?: QueueType,
   ): Task<NightwatchProcess> | undefined {
     const queues = this.getQueues(queueType);
 

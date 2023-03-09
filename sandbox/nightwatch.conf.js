@@ -161,7 +161,8 @@ module.exports = {
         // define cucumber specific options
         options: {
           //set the feature path
-          feature_path: 'node_modules/nightwatch/examples/cucumber-js/*/*.feature',
+          feature_path:
+            'node_modules/nightwatch/examples/cucumber-js/*/*.feature',
 
           // start the webdriver session automatically (enabled by default)
           // auto_start_session: true

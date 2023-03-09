@@ -1,8 +1,20 @@
-import { ChildNodeType, ContextType, IsGroupType, MatchEvent, MatchOptions, OptionalAttributes } from './types';
+import {
+  ChildNodeType,
+  ContextType,
+  IsGroupType,
+  MatchEvent,
+  MatchOptions,
+  OptionalAttributes,
+} from './types';
 
-export const IsMatchedEvents = ['match-by-context', 'match-by-name', 'match-by-location'] as const;
+export const IsMatchedEvents = [
+  'match-by-context',
+  'match-by-name',
+  'match-by-location',
+] as const;
 export const ROOT_NODE_NAME = '__root__';
-const sortByLine = (n1: BaseNode, n2: BaseNode): number => n1.zeroBasedLine - n2.zeroBasedLine;
+const sortByLine = (n1: BaseNode, n2: BaseNode): number =>
+  n1.zeroBasedLine - n2.zeroBasedLine;
 // group nodes after sort
 const groupNodes = <N extends BaseNode>(list: N[], node: N): N[] => {
   if (list.length <= 0) {
@@ -36,7 +48,7 @@ export class BaseNode {
     this._ancestorTitles = [];
     this.attrs = attrs ?? {};
     this.events = new Set();
-    this.describeBlock = zeroBasedLine === -1 ? true: false;
+    this.describeBlock = zeroBasedLine === -1 ? true : false;
   }
 
   hasUnknownLocation(): boolean {
@@ -101,7 +113,9 @@ export class BaseNode {
     //can not merge if the location is unknown
     if (
       !forced &&
-      (this.hasUnknownLocation() || another.hasUnknownLocation() || another.zeroBasedLine !== this.zeroBasedLine)
+      (this.hasUnknownLocation() ||
+        another.hasUnknownLocation() ||
+        another.zeroBasedLine !== this.zeroBasedLine)
     ) {
       return false;
     }
@@ -154,7 +168,9 @@ export class BaseNode {
     }
     // check name
     const ignoreNameDiff =
-      options?.ignoreNonLiteralNameDiff && this.maybeNonLiteralName() && other.maybeNonLiteralName();
+      options?.ignoreNonLiteralNameDiff &&
+      this.maybeNonLiteralName() &&
+      other.maybeNonLiteralName();
     if (
       this.fullName !== other.fullName &&
       !ignoreNameDiff &&
@@ -165,7 +181,9 @@ export class BaseNode {
 
     // check group
     const ignoreGroupDiff =
-      options?.ignoreGroupDiff || this.isGroupNode() === 'maybe' || other.isGroupNode() === 'maybe';
+      options?.ignoreGroupDiff ||
+      this.isGroupNode() === 'maybe' ||
+      other.isGroupNode() === 'maybe';
     if (this.isGroupNode() !== other.isGroupNode() && !ignoreGroupDiff) {
       return false;
     }
@@ -199,7 +217,12 @@ export class BaseNode {
 export class DataNode<T> extends BaseNode {
   data: T;
 
-  constructor(name: string, zeroBasedLine: number, data: T, attrs?: OptionalAttributes) {
+  constructor(
+    name: string,
+    zeroBasedLine: number,
+    data: T,
+    attrs?: OptionalAttributes,
+  ) {
     super(name, zeroBasedLine, attrs);
     this.data = data;
   }
@@ -232,7 +255,7 @@ export class ContainerNode<T> extends BaseNode {
 
   public findContainer(
     path: string[],
-    createNewContainer?: (name: string) => ContainerNode<T>
+    createNewContainer?: (name: string) => ContainerNode<T>,
   ): ContainerNode<T> | undefined {
     if (path.length <= 0) {
       return this;
@@ -268,13 +291,19 @@ export class ContainerNode<T> extends BaseNode {
 
     this.childContainers.sort(sortByLine);
     if (grouping) {
-      this.childContainers = this.childContainers.reduce<ContainerNode<T>[]>(groupNodes, []);
+      this.childContainers = this.childContainers.reduce<ContainerNode<T>[]>(
+        groupNodes,
+        [],
+      );
     }
 
     // if container doesn't have valid line info, use the first known-location child's
     if (this.hasUnknownLocation()) {
       const topLines = ([this.childData, this.childContainers] as BaseNode[][])
-        .map((nodes) => nodes.find((n) => !n.hasEvent('invalid-location'))?.zeroBasedLine)
+        .map(
+          (nodes) =>
+            nodes.find((n) => !n.hasEvent('invalid-location'))?.zeroBasedLine,
+        )
         .filter((n) => n != null) as number[];
       this.zeroBasedLine = topLines.length > 0 ? Math.min(...topLines) : -1;
       if (!this.attrs.range) {
@@ -288,7 +317,9 @@ export class ContainerNode<T> extends BaseNode {
 
   public getChildren<C extends ContextType>(type: C): ChildNodeType<T, C>[] {
     // https://github.com/microsoft/TypeScript/issues/24929
-    return (type === 'container' ? this.childContainers : this.childData) as ChildNodeType<T, C>[];
+    return (
+      type === 'container' ? this.childContainers : this.childData
+    ) as ChildNodeType<T, C>[];
   }
 
   private allChildNodes<C extends ContextType>(type: C): ChildNodeType<T, C>[] {
@@ -302,13 +333,17 @@ export class ContainerNode<T> extends BaseNode {
       allNodes.push(...(allDataNodes as ChildNodeType<T, C>[]));
     }
 
-    const childrenNodes = allContainerNodes.flatMap((c) => c.allChildNodes(type));
+    const childrenNodes = allContainerNodes.flatMap((c) =>
+      c.allChildNodes(type),
+    );
     return allNodes.concat(childrenNodes);
   }
   public checkDuplicateName(): void {
     const dataNodes = this.allChildNodes('data');
     dataNodes.forEach((n) => {
-      const dups = dataNodes.filter((nn) => nn !== n && nn.fullName === n.fullName);
+      const dups = dataNodes.filter(
+        (nn) => nn !== n && nn.fullName === n.fullName,
+      );
       if (dups.length > 0) {
         dups.concat(n).forEach((nn) => nn.addEvent('duplicate-name'));
       }
@@ -316,6 +351,8 @@ export class ContainerNode<T> extends BaseNode {
   }
 
   // extract all unmatched data node
-  public unmatchedNodes = <C extends ContextType>(type: C): ChildNodeType<T, C>[] =>
+  public unmatchedNodes = <C extends ContextType>(
+    type: C,
+  ): ChildNodeType<T, C>[] =>
     this.allChildNodes(type).filter((n) => !n.isMatched);
 }

@@ -46,7 +46,10 @@
           const environmentName = event.target.getAttribute('envName');
           vscode.postMessage({
             method: 'environment-select',
-            params: { environment: environmentName, state: event.target.checked },
+            params: {
+              environment: environmentName,
+              state: event.target.checked,
+            },
           });
         });
       }

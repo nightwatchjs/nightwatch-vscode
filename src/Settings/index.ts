@@ -10,17 +10,26 @@ export class Settings {
   }
 
   public get<T>(settingName: string): T {
-    const config = this._vscode.workspace.getConfiguration('nightwatch', this._workspaceUri);
+    const config = this._vscode.workspace.getConfiguration(
+      'nightwatch',
+      this._workspaceUri,
+    );
     return config.get(settingName) as T;
   }
 
   public async set<T>(settingName: string, value: T) {
-    const config = this._vscode.workspace.getConfiguration('nightwatch', this._workspaceUri);
+    const config = this._vscode.workspace.getConfiguration(
+      'nightwatch',
+      this._workspaceUri,
+    );
     await config.update(settingName, value, true);
   }
 
   public json(settingName: string) {
-    const config = this._vscode.workspace.getConfiguration('nightwatch', this._workspaceUri);
+    const config = this._vscode.workspace.getConfiguration(
+      'nightwatch',
+      this._workspaceUri,
+    );
     return JSON.parse(JSON.stringify(config.get(settingName)));
   }
 }

@@ -3,7 +3,12 @@ import { NightwatchExtContext } from '../NightwatchExt';
 import Runner, { runnerEvents } from '../NightwatchRunner/runner';
 import { Options, RunnerEvent } from '../NightwatchRunner';
 import { stringifyRequest } from './helpers';
-import { NightwatchProcessInfo, NightwatchProcessRequest, RunnerTask, StopReason } from './types';
+import {
+  NightwatchProcessInfo,
+  NightwatchProcessRequest,
+  RunnerTask,
+  StopReason,
+} from './types';
 // TODO: remove this and pass the vscode
 import * as vscode from 'vscode';
 import { extensionId } from '../appGlobals';
@@ -20,12 +25,17 @@ export class NightwatchProcess implements NightwatchProcessInfo {
   private extContext: NightwatchExtContext;
   private logging: Logging;
 
-  constructor(extContext: NightwatchExtContext, request: NightwatchProcessRequest) {
+  constructor(
+    extContext: NightwatchExtContext,
+    request: NightwatchProcessRequest,
+  ) {
     this.id = `${request.type}-${SEQ++}`;
     this.request = request;
     this.desc = `id: ${this.id}, request: ${stringifyRequest(request)}`;
     this.extContext = extContext;
-    this.logging = extContext.loggingFactory.create(`NightwatchProcess ${request.type}`);
+    this.logging = extContext.loggingFactory.create(
+      `NightwatchProcess ${request.type}`,
+    );
   }
 
   public start(): Promise<void> {
@@ -48,7 +58,8 @@ export class NightwatchProcess implements NightwatchProcessInfo {
 
   private getReporterPath() {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const extensionPath = vscode.extensions.getExtension(extensionId)!.extensionPath;
+    const extensionPath =
+      vscode.extensions.getExtension(extensionId)!.extensionPath;
     return join(extensionPath, 'dist', 'reporter.js');
   }
 
@@ -69,14 +80,22 @@ export class NightwatchProcess implements NightwatchProcessInfo {
         break;
       case 'by-file-test':
         options.parameters = {
-          args: ['--testcase', this.request.testName, '--test', this.request.testFileName],
+          args: [
+            '--testcase',
+            this.request.testName,
+            '--test',
+            this.request.testFileName,
+          ],
         };
         break;
       case 'by-file':
         options.parameters = { args: [this.request.testFileName] };
         break;
       default:
-        this.logging("warn", `could not find valid request type: ${this.request.type}`);
+        this.logging(
+          'warn',
+          `could not find valid request type: ${this.request.type}`,
+        );
         break;
     }
 
@@ -87,7 +106,7 @@ export class NightwatchProcess implements NightwatchProcessInfo {
       this.extContext.settings,
       this.extContext.nightwatchSettings,
       this.request.itemRun?.run.token,
-      options
+      options,
     );
 
     this.registerListener(runner);
@@ -115,7 +134,9 @@ export class NightwatchProcess implements NightwatchProcessInfo {
 
   private registerListener(runner: Runner) {
     runnerEvents.forEach((event) => {
-      runner.on(event, (...args: unknown[]) => this.eventHandler(event, ...args));
+      runner.on(event, (...args: unknown[]) =>
+        this.eventHandler(event, ...args),
+      );
     });
   }
 

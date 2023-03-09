@@ -18,16 +18,29 @@ export const nodeBinExtension: string = isWindows ? '.cmd' : '';
  * @param testPath
  * @returns
  */
-export async function pathToNightwatchCommandLine(testPath: string): Promise<string | undefined> {
+export async function pathToNightwatchCommandLine(
+  testPath: string,
+): Promise<string | undefined> {
   const node = await which('node');
 
-  const absolutePath = normalize(join(testPath, 'node_modules', '.bin', 'nightwatch' + nodeBinExtension));
+  const absolutePath = normalize(
+    join(testPath, 'node_modules', '.bin', 'nightwatch' + nodeBinExtension),
+  );
 
-  return existsSync(absolutePath) ? `${!isWindows ? node : ''} ${JSON.stringify(absolutePath)}` : undefined;
+  return existsSync(absolutePath)
+    ? `${!isWindows ? node : ''} ${JSON.stringify(absolutePath)}`
+    : undefined;
 }
 
-export const prefixWorkspace = (vscode: vsCodeTypes.VSCode, context: NightwatchExtContext, message: string): string => {
-  if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 1) {
+export const prefixWorkspace = (
+  vscode: vsCodeTypes.VSCode,
+  context: NightwatchExtContext,
+  message: string,
+): string => {
+  if (
+    vscode.workspace.workspaceFolders &&
+    vscode.workspace.workspaceFolders.length > 1
+  ) {
     return `(${context.workspace.name}) ${message}`;
   }
   return message;

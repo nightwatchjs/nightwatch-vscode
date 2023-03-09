@@ -2,7 +2,9 @@ import { debugSessionName } from '../appGlobals';
 import { toFilePath } from '../helpers';
 import * as vsCodeTypes from '../types/vscodeTypes';
 
-export class DebugConfigurationProvider implements vsCodeTypes.DebugConfigurationProvider {
+export class DebugConfigurationProvider
+  implements vsCodeTypes.DebugConfigurationProvider
+{
   private fileNameToRun = '';
   private testToRun = '';
 
@@ -18,7 +20,7 @@ export class DebugConfigurationProvider implements vsCodeTypes.DebugConfiguratio
   resolveDebugConfiguration(
     _folder: vsCodeTypes.WorkspaceFolder | undefined,
     debugConfiguration: vsCodeTypes.DebugConfiguration,
-    _token?: vsCodeTypes.CancellationToken
+    _token?: vsCodeTypes.CancellationToken,
   ): vsCodeTypes.DebugConfiguration {
     if (!debugConfiguration.env) {
       debugConfiguration.env = {};
@@ -28,7 +30,12 @@ export class DebugConfigurationProvider implements vsCodeTypes.DebugConfiguratio
 
     if (this.fileNameToRun) {
       if (this.testToRun !== '') {
-        args.unshift('--testcase', this.testToRun, '--test', this.fileNameToRun);
+        args.unshift(
+          '--testcase',
+          this.testToRun,
+          '--test',
+          this.fileNameToRun,
+        );
       }
       args.unshift(toFilePath(this.fileNameToRun));
 
@@ -42,7 +49,7 @@ export class DebugConfigurationProvider implements vsCodeTypes.DebugConfiguratio
 
   provideDebugConfigurations(
     _folder: vsCodeTypes.WorkspaceFolder | undefined,
-    _token?: vsCodeTypes.CancellationToken
+    _token?: vsCodeTypes.CancellationToken,
   ): vsCodeTypes.DebugConfiguration[] {
     const debugConfiguration: vsCodeTypes.DebugConfiguration = {
       type: 'node',

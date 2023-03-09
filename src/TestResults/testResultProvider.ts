@@ -1,12 +1,21 @@
 import { IParseResults, parse } from 'jest-editor-support';
 import { NightwatchSessionEvents } from '../NightwatchExt';
 import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
-import { TestFileAssertionStatus, TestReconciliationStateType } from '../NightwatchRunner';
+import {
+  TestFileAssertionStatus,
+  TestReconciliationStateType,
+} from '../NightwatchRunner';
 import TestReconciler from '../NightwatchRunner/testReconciler';
 import * as vsCodeTypes from './../types/vscodeTypes';
 import * as match from './matchByContext';
 import { createTestResultEvents } from './testResultEvents';
-import { SortedTestResults, TestResult, TestResultEvents, TestStats, TestSuiteResult } from './types';
+import {
+  SortedTestResults,
+  TestResult,
+  TestResultEvents,
+  TestStats,
+  TestSuiteResult,
+} from './types';
 
 // TODO: Move to types
 export interface StatusInfo {
@@ -14,7 +23,9 @@ export interface StatusInfo {
   desc: string;
 }
 
-export const TestResultStatusInfo: { [key in TestReconciliationStateType]: StatusInfo } = {
+export const TestResultStatusInfo: {
+  [key in TestReconciliationStateType]: StatusInfo;
+} = {
   KnownFail: { precedence: 1, desc: 'Failed' },
   Unknown: {
     precedence: 2,
@@ -28,7 +39,10 @@ const sortByStatus = (a: TestResult, b: TestResult): number => {
   if (a.status === b.status) {
     return 0;
   }
-  return TestResultStatusInfo[a.status].precedence - TestResultStatusInfo[b.status].precedence;
+  return (
+    TestResultStatusInfo[a.status].precedence -
+    TestResultStatusInfo[b.status].precedence
+  );
 };
 
 export class TestResultProvider {
@@ -38,7 +52,11 @@ export class TestResultProvider {
   private testSuites: Map<string, TestSuiteResult>;
   private testFiles?: string[];
 
-  constructor(vscode: vsCodeTypes.VSCode, extEvents: NightwatchSessionEvents, verbose = false) {
+  constructor(
+    vscode: vsCodeTypes.VSCode,
+    extEvents: NightwatchSessionEvents,
+    verbose = false,
+  ) {
     this.verbose = verbose;
     this.reconciler = new TestReconciler();
     this.events = createTestResultEvents(vscode);
@@ -110,7 +128,10 @@ export class TestResultProvider {
   }
 
   isTestFile(fileName: string): 'yes' | 'no' | 'unknown' {
-    if (this.testFiles?.includes(fileName) || this.testSuites.get(fileName) != null) {
+    if (
+      this.testFiles?.includes(fileName) ||
+      this.testSuites.get(fileName) != null
+    ) {
       return 'yes';
     }
     if (!this.testFiles) {
@@ -131,13 +152,21 @@ export class TestResultProvider {
     return cache;
   }
 
-  private matchResults(filePath: string, { root, itBlocks }: IParseResults): TestSuiteResult {
+  private matchResults(
+    filePath: string,
+    { root, itBlocks }: IParseResults,
+  ): TestSuiteResult {
     let error: string | undefined;
     try {
       const cache = this.getTestSuiteResult(filePath);
       if (cache?.assertionContainer) {
         cache.results = this.groupByRange(
-          match.matchTestAssertions(filePath, root, cache.assertionContainer, this.verbose)
+          match.matchTestAssertions(
+            filePath,
+            root,
+            cache.assertionContainer,
+            this.verbose,
+          ),
         );
         this.events.testSuiteChanged.fire({
           type: 'result-matched',
@@ -161,7 +190,9 @@ export class TestResultProvider {
     return {
       status: 'Unknown',
       message: error,
-      results: itBlocks.map((t) => match.toMatchResult(t, 'no assertion found', 'match-failed')),
+      results: itBlocks.map((t) =>
+        match.toMatchResult(t, 'no assertion found', 'match-failed'),
+      ),
     };
   }
 
@@ -189,7 +220,11 @@ export class TestResultProvider {
     } catch (e) {
       const message = `failed to get test results for ${filePath}`;
       console.warn(message, e);
-      this.testSuites.set(filePath, { status: 'KnownFail', message, results: [] });
+      this.testSuites.set(filePath, {
+        status: 'KnownFail',
+        message,
+        results: [],
+      });
       throw e;
     }
   }
@@ -246,13 +281,18 @@ export class TestResultProvider {
 
   // TODO: replace any with NightwatchTotalResults
   // TestFileAssertionStatus[]
-  updateTestResults(data: any, process: NightwatchProcessInfo): TestFileAssertionStatus[] {
+  updateTestResults(
+    data: any,
+    process: NightwatchProcessInfo,
+  ): TestFileAssertionStatus[] {
     const results = this.reconciler.updateFileWithNightwatchStatus(data);
     results?.forEach((r) => {
       this.testSuites.set(r.file, {
         status: r.status,
         message: r.message,
-        assertionContainer: r.assertions ? match.buildAssertionContainer(r.assertions) : undefined,
+        assertionContainer: r.assertions
+          ? match.buildAssertionContainer(r.assertions)
+          : undefined,
       });
     });
     this.events.testSuiteChanged.fire({
