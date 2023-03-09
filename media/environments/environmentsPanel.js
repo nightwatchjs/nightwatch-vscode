@@ -3,32 +3,43 @@
 
   const environmentSection = document.getElementById('environment-section');
 
+  function createLabelElement(environment) {
+    const labelElement = document.createElement('label');
+    labelElement.setAttribute('for', environment);
+    labelElement.textContent = environment;
+    return labelElement;
+  }
+
+  function createInputElement(environment) {
+    const inputElement = document.createElement('input');
+    inputElement.type = 'radio';
+    inputElement.name = 'environment';
+    inputElement.setAttribute('envName', environment);
+    return inputElement;
+  }
+
+  function createArticleElement(labelElement, inputElement) {
+    const articleElement = document.createElement('article');
+    articleElement.appendChild(labelElement);
+    articleElement.appendChild(inputElement);
+    return articleElement;
+  }
+
   window.addEventListener('message', (event) => {
     const { method, params } = event.data;
     if (method === 'add-environments') {
       environmentSection.replaceChildren('');
       const envList = params.environments;
 
-      envList.forEach((environment) => {
-        const articleElement = document.createElement('article');
-        const labelElement = document.createElement('label');
-        const inputElement = document.createElement('input');
+      const articleElements = envList.map((environment) => {
+        const labelElement = createLabelElement(environment);
+        const inputElement = createInputElement(environment);
+        const articleElement = createArticleElement(labelElement, inputElement);
 
-        // Creating label element
-        labelElement.setAttribute('for', environment);
-        labelElement.textContent = environment;
-
-        // creating input element
-        inputElement.type = 'radio';
-        inputElement.name = 'environment';
-        inputElement.setAttribute('envName', environment);
-
-        // adding label and input element inside article element
-        articleElement.appendChild(labelElement);
-        articleElement.appendChild(inputElement);
-
-        environmentSection.appendChild(articleElement);
+        return articleElement;
       });
+
+      environmentSection.replaceChildren(...articleElements);
 
       for (const input of document.querySelectorAll('input[type=radio]')) {
         input.addEventListener('change', (event) => {
