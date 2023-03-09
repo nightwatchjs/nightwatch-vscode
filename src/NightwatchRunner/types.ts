@@ -15,7 +15,7 @@ export interface RunArgs {
 
 export type Options = {
   reporter: string;
-  args?: RunArgs;
+  parameters?: RunArgs;
 };
 
 export type RunnerEvent =

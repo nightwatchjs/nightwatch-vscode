@@ -60,20 +60,20 @@ export class NightwatchProcess implements NightwatchProcessInfo {
 
     const options: Options = {
       reporter: `${this.getReporterPath()},html`,
-      args: { args: [] },
+      parameters: { args: [] },
     };
 
     switch (this.request.type) {
       case 'not-test':
-        options.args = { args: this.request.args, replace: true };
+        options.parameters = { args: this.request.args, replace: true };
         break;
       case 'by-file-test':
-        options.args = {
-          args: ['--testcase', this.request.testName, '--test', this.request.testFileName]
+        options.parameters = {
+          args: ['--testcase', this.request.testName, '--test', this.request.testFileName],
         };
         break;
       case 'by-file':
-        options.args = { args: [this.request.testFileName] };
+        options.parameters = { args: [this.request.testFileName] };
         break;
       default:
         this.logging("warn", `could not find valid request type: ${this.request.type}`);

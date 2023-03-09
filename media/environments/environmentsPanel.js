@@ -6,22 +6,27 @@
   window.addEventListener('message', (event) => {
     const { method, params } = event.data;
     if (method === 'add-environments') {
-      environmentSection.innerHTML = '';
+      environmentSection.replaceChildren('');
       const envList = params.environments;
 
       envList.forEach((environment) => {
         const articleElement = document.createElement('article');
         const labelElement = document.createElement('label');
+        const inputElement = document.createElement('input');
+
+        // Creating label element
         labelElement.setAttribute('for', environment);
         labelElement.textContent = environment;
 
-        const inputElement = document.createElement('input');
+        // creating input element
         inputElement.type = 'radio';
         inputElement.name = 'environment';
         inputElement.setAttribute('envName', environment);
 
+        // adding label and input element inside article element
         articleElement.appendChild(labelElement);
         articleElement.appendChild(inputElement);
+
         environmentSection.appendChild(articleElement);
       });
 

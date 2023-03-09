@@ -9,7 +9,7 @@ import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
 import { Options, OutputType, RunnerEvent } from './types';
 import * as vsCodeTypes from '../types/vscodeTypes';
-import kill from "tree-kill";
+import kill from 'tree-kill';
 
 export const runnerEvents: RunnerEvent[] = [
   'executableOutput',
@@ -82,8 +82,10 @@ export default class Runner extends EventEmitter {
 
     args.push('--parallel', parallels.toString());
 
-    if (this.options.args) {
-      return this.options.args.replace ? this.options.args.args : [...this.options.args.args, ...args];
+    if (this.options.parameters) {
+      return this.options.parameters.replace
+        ? this.options.parameters.args
+        : [...this.options.parameters.args, ...args];
     }
 
     return args;
@@ -99,24 +101,20 @@ export default class Runner extends EventEmitter {
 
     this.token?.onCancellationRequested(() => {
       if (this.childProcess) {
-        kill(this.childProcess.pid!);
+       this.killProcess(this.childProcess, this.childProcess.pid!);
       }
     });
-    if (this.token?.isCancellationRequested) {
-      if (this.childProcess) {
-        kill(this.childProcess.pid!);
-      };
+    if (this.token?.isCancellationRequested && this.childProcess) {
+     this.killProcess(this.childProcess, this.childProcess.pid!);
     }
 
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
     this.childProcess.stdout!.on('data', (data: Buffer) => {
       this._parseOutput(data, false, this.logging);
-      // this.emit('executableOutput', data.toString());
     });
 
     this.childProcess.stderr!.on('data', (data) => {
       this._parseOutput(data, true, this.logging);
-      // this.emit('executableStdErr', data);
     });
 
     this.childProcess.on('exit', (code: number | null, signal: string | null) => {
@@ -144,17 +142,7 @@ export default class Runner extends EventEmitter {
       // exit process on windows
       spawn('taskkill', ['/pid', `${this.childProcess.pid}`, '/T', '/F']);
     } else {
-      try {
-        // kill all the process with the same PGID, i.e.
-        // as a detached process, it is the same as the PID of the leader process.
-        process.kill(-this.childProcess.pid!);
-      } catch (error) {
-        this.logging(
-          'warn',
-          `failed to kill process group, this may leave some orphan process ${this.childProcess.pid}, error: ${error}`
-        );
-        this.childProcess.kill();
-      }
+      this.killProcess(this.childProcess, this.childProcess.pid!);
     }
     delete this.childProcess;
   }
@@ -200,5 +188,17 @@ export default class Runner extends EventEmitter {
     const str = data.toString('utf8');
     const match = checks.find(({ regex }) => regex.test(str));
     return match ? match.messageType : outputTypes.unknown;
+  }
+
+  killProcess(childProcess: ChildProcess, pid: number) {
+    try {
+      kill(pid);
+    } catch (error) {
+      this.logging(
+        'warn',
+        `failed to kill process group, this may leave some orphan process ${childProcess.pid}, error: ${error}`
+      );
+      childProcess.kill();
+    }
   }
 }

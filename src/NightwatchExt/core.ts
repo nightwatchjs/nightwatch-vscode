@@ -357,7 +357,7 @@ export class NightwatchExt {
       const workspaceState = this.context.workspaceState;
       workspaceState.update('nwConfig', nwConfig);
       this.environmentsPanel._addNwEnvironments();
-      this.environmentsPanel._updateNwEnvironments();
+      this.environmentsPanel.updateNwEnvironments();
     });
   }
 
