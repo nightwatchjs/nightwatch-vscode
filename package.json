@@ -43,11 +43,7 @@
 		"workspaceContains:**/nightwatch.conf.cjs",
 		"workspaceContains:**/nightwatch.conf.ts",
 		"workspaceContains:**/nightwatch.json",
-		"workspaceContains:node_modules/.bin/nightwatch",
-		"onCommand:com.nightwatch.nightwatchExt.install-nightwatch",
-		"onCommand:com.nightwatch.nightwatchExt.run-test",
-		"onCommand:com.nightwatch.nightwatchExt.debug-test",
-		"onCommand:com.nightwatch.nightwatchExt.run-all-test"
+		"workspaceContains:node_modules/.bin/nightwatch"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
@@ -95,13 +91,23 @@
 				"category": "Nightwatch",
 				"command": "com.nightwatch.nightwatchExt.debug-test",
 				"title": "%nightwatch.command.nightwatch.debugTest.title%"
+			},
+			{
+				"category": "Nightwatch",
+				"command": "com.nightwatch.nightwatchExt.headlessMode",
+				"title": "%nightwatch.command.nightwatch.headlessMode.title%"
+			},
+			{
+				"category": "Nightwatch",
+				"command": "com.nightwatch.nightwatchExt.openReport",
+				"title": "%nightwatch.command.nightwatch.OpenReport.title%"
 			}
 		],
 		"configuration": {
 			"title": "Nightwatch",
 			"properties": {
-				"nightwatch.shell": {
-					"markdownDescription": "Shell path or login-shell to override the NIghtwatch runner process default shell (see node [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) for more details)",
+				"nightwatch.settings.shell": {
+					"markdownDescription": "Override the Nightwatch runner process default shell (see node [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) for more details)",
 					"type": [
 						"string",
 						"null"
@@ -109,25 +115,25 @@
 					"default": null,
 					"scope": "resource"
 				},
-				"nightwatch.showTerminalOnLaunch": {
+				"nightwatch.settings.showTerminalOnLaunch": {
 					"description": "Automatically open test explorer's terminal upon launch",
 					"type": "boolean",
 					"default": true,
 					"scope": "window"
 				},
-				"nightwatch.nightwatchCommandLine": {
+				"nightwatch.settings.nightwatchCommandLine": {
 					"description": "Command line to start Nightwatch tests. This should be the same command line that users run nightwatch tests from a terminal/shell, with the ability to add additional arguments (by extension at runtime)",
 					"type": "string",
 					"scope": "resource"
 				},
-				"nightwatch.testPath": {
-					"description": "The path to your e2e test folder",
+				"nightwatch.settings.testPath": {
+					"description": "Set the path to your Nightwatch tests folder",
 					"type": "string",
 					"default": "",
 					"scope": "resource"
 				},
-				"nightwatch.nodeEnv": {
-					"markdownDescription": "The env passed to runner process in addition to `process.env`",
+				"nightwatch.settings.nodeEnv": {
+					"markdownDescription": "Pass environment settings to runner process in addition to `process.env`",
 					"type": [
 						"object",
 						"null"
@@ -135,10 +141,34 @@
 					"default": null,
 					"scope": "resource"
 				},
-				"nightwatch.debugMode": {
+				"nightwatch.settings.debugMode": {
 					"description": "Enable debug mode to diagnose extension issues. (see developer console)",
 					"type": "boolean",
 					"default": false,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.headlessMode": {
+					"description": "Run Nightwatch tests in headless mode",
+					"type": "boolean",
+					"default": false,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.openReport": {
+					"description": "Open report after the test run is complete",
+					"type": "boolean",
+					"default": false,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.parallels": {
+					"description": "Specify the number of parallels Nightwatch should use to spawn tests.",
+					"type": "number",
+					"default": 0,
+					"scope": "resource"
+				},
+				"nightwatch.quickSettings.environments": {
+					"description": "Run Nightwatch on this environment",
+					"type": "string",
+					"default": "",
 					"scope": "resource"
 				}
 			}
@@ -174,18 +204,31 @@
 					}
 				]
 			}
-		]
+		],
+		"views": {
+			"test": [
+				{
+					"type": "webview",
+					"id": "com.nightwatch.nightwatchExt.quickSettingPanel",
+					"name": "Nightwatch Quick Settings"
+				},
+				{
+					"type": "webview",
+					"id": "com.nightwatch.nightwatchExt.environmentPanel",
+					"name": "Nightwatch Environments"
+				}
+			]
+		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run package",
+		"vscode:prepublish": "npm run compile",
 		"compile": "webpack",
 		"watch": "webpack --watch",
 		"package": "webpack --mode production --devtool hidden-source-map",
-		"compile-tests": "tsc -p . --outDir out",
-		"watch-tests": "tsc -p . -w --outDir out",
-		"pretest": "npm run compile-tests && npm run compile && npm run lint",
-		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"test": "node ./out/test/runTest.js",
+		"pretest": "npm run compile-tests && npm run compile && npm run lint"
 	},
 	"devDependencies": {
 		"@types/glob": "^8.0.1",
@@ -193,10 +236,10 @@
 		"@types/node": "18.x",
 		"@types/vscode": "^1.68.0",
 		"@types/which": "^2.0.2",
-		"@typescript-eslint/eslint-plugin": "^5.52.0",
-		"@typescript-eslint/parser": "^5.52.0",
-		"@vscode/test-electron": "^2.2.3",
-		"eslint": "^8.34.0",
+		"@typescript-eslint/eslint-plugin": "^5.54.0",
+		"@typescript-eslint/parser": "^5.54.0",
+		"@vscode/test-electron": "^2.3.0",
+		"eslint": "^8.35.0",
 		"glob": "^8.1.0",
 		"mocha": "^10.2.0",
 		"ts-loader": "^9.4.2",
@@ -209,8 +252,9 @@
 	"dependencies": {
 		"jest-editor-support": "^31.0.1",
 		"json5": "^2.2.3",
-		"nightwatch": "^2.6.14",
+		"nightwatch": "^2.6.16",
 		"stacktrace-parser": "^0.1.10",
+		"tree-kill": "^1.2.2",
 		"which": "^3.0.0"
 	}
 }

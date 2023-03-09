@@ -7,6 +7,7 @@ import { NightwatchExt } from '../NightwatchExt';
 import ProjectWorkspace from '../NightwatchRunner/projectWorkspace';
 import { NightwatchExtensionResourceSettings } from '../Settings/types';
 import { TestIdentifier } from '../TestResults/types';
+import { Settings } from '../Settings';
 
 export type GetNightwatchExtByURI = (uri: vsCodeTypes.Uri) => NightwatchExt | undefined;
 
@@ -29,6 +30,7 @@ export type NightwatchExtContext = {
   settings: NightwatchExtensionResourceSettings;
   createRunnerWorkspace: () => Promise<ProjectWorkspace>;
   loggingFactory: LoggingFactory;
+  nightwatchSettings: Settings;
 };
 
 export type ListTestFilesCallback = (fileNames?: string[], error?: any) => void;

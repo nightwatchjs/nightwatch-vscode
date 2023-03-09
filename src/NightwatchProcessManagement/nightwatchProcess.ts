@@ -59,22 +59,21 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     }
 
     const options: Options = {
-      reporter: this.getReporterPath(),
-      args: { args: [] },
+      reporter: `${this.getReporterPath()},html`,
+      parameters: { args: [] },
     };
 
     switch (this.request.type) {
       case 'not-test':
-        options.args = { args: this.request.args, replace: true };
+        options.parameters = { args: this.request.args, replace: true };
         break;
       case 'by-file-test':
-        options.args = {
+        options.parameters = {
           args: ['--testcase', this.request.testName, '--test', this.request.testFileName],
-          replace: true,
         };
         break;
       case 'by-file':
-        options.args = { args: [this.request.testFileName], replace: true };
+        options.parameters = { args: [this.request.testFileName] };
         break;
       default:
         this.logging("warn", `could not find valid request type: ${this.request.type}`);
@@ -82,7 +81,14 @@ export class NightwatchProcess implements NightwatchProcessInfo {
     }
 
     const runnerWorkspace = await this.extContext.createRunnerWorkspace();
-    const runner = new Runner(runnerWorkspace, this.extContext.loggingFactory, options);
+    const runner = new Runner(
+      runnerWorkspace,
+      this.extContext.loggingFactory,
+      this.extContext.settings,
+      this.extContext.nightwatchSettings,
+      this.request.itemRun?.run.token,
+      options
+    );
 
     this.registerListener(runner);
 

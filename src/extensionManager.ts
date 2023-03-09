@@ -1,9 +1,14 @@
+import { EnvironmentsPanel } from './Panels/environmentsPanel';
+import { QuickSettingPanel } from './Panels/quickSettingPanel';
 import * as vsCodeTypes from './types/vscodeTypes';
 
 import { NightwatchExt } from './NightwatchExt';
 import { CommandType, GetNightwatchExtByURI, RegisterCommand } from './NightwatchExt/types';
 import { extensionName } from './appGlobals';
 import { DebugConfigurationProvider } from './NightwatchExt/debugConfigurationProvider';
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __non_webpack_require__: typeof require;
 
 const commandPrefix: Record<CommandType, string> = {
   'all-workspaces': `${extensionName}`,
@@ -16,6 +21,7 @@ export class ExtensionManager {
   private debugConfigurationProvider: DebugConfigurationProvider;
 
   private extByWorkspace: Map<string, NightwatchExt> = new Map();
+  private nwConfPath!: string;
 
   constructor(vscode: vsCodeTypes.VSCode, context: vsCodeTypes.ExtensionContext) {
     this._vscode = vscode;
@@ -34,14 +40,23 @@ export class ExtensionManager {
     });
   }
 
-  register(workspaceFolder: vsCodeTypes.WorkspaceFolder): void {
+  async register(workspaceFolder: vsCodeTypes.WorkspaceFolder): Promise<void> {
     const nightwatchExt = new NightwatchExt(
       this._vscode,
-      this.context,
       workspaceFolder,
-      this.debugConfigurationProvider
+      this.debugConfigurationProvider,
+      this.context
     );
+
     this.extByWorkspace.set(workspaceFolder.name, nightwatchExt);
+    // updating workspace state
+    await this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then((res) => {
+      delete __non_webpack_require__.cache[__non_webpack_require__.resolve(res[0].path)];
+      const nwConfig = require(/* webpackIgnore: true */ res[0].path);
+      const workspaceState = this.context.workspaceState;
+      workspaceState.update('nwConfig', nwConfig);
+    });
+
     nightwatchExt.startSession();
   }
 
@@ -113,7 +128,7 @@ export class ExtensionManager {
   onDidChangeConfiguration(event: vsCodeTypes.ConfigurationChangeEvent): void {
     const vscode = this._vscode;
 
-    if (event.affectsConfiguration('nightwatch')) {
+    if (event.affectsConfiguration('nightwatch') && event.affectsConfiguration('nightwatch.settings')) {
       vscode.workspace.workspaceFolders?.forEach((workspaceFolder) => {
         const nightwatchExt = this.getByExtName(workspaceFolder.name);
         if (nightwatchExt && event.affectsConfiguration('nightwatch', workspaceFolder.uri)) {
@@ -193,10 +208,12 @@ export class ExtensionManager {
       new vscode.RelativePattern(wsFolder, '**/*nightwatch*.conf.{ts,js,cjs}')
     );
 
-    watcher.onDidChange((_uri) => {
-      vscode.workspace.workspaceFolders?.forEach((ws) => {
+    watcher.onDidChange((uri) => {
+      this.nwConfPath = uri.path;
+      vscode.workspace.workspaceFolders?.forEach(async (ws) => {
         const ext = this.extByWorkspace.get(ws.name);
         if (ext) {
+          await ext.updateEnvironmentPanel();
           ext.updateTestFileList();
         }
       });

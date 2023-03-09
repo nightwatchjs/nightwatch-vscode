@@ -20,8 +20,8 @@ const extensionConfig = {
   target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
   mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
   entry: {
-     extension: './src/extension.ts',
-     reporter: './src/reporter.ts'
+    extension: './src/extension.ts',
+    reporter: './src/reporter.ts',
   }, // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
@@ -40,6 +40,11 @@ const extensionConfig = {
     },
   },
   module: {
+    parser: {
+      javascript: {
+        commonjsMagicComments: true,
+      }
+    },
     rules: [
       {
         test: /\.ts$/,

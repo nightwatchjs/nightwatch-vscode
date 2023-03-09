@@ -1,3 +1,5 @@
+import { EnvironmentsPanel } from './../Panels/environmentsPanel';
+import { QuickSettingPanel } from '../Panels/quickSettingPanel';
 import { DebugTestIdentifier } from './../TestProvider/types';
 import { OutputChannel } from 'vscode';
 import { Logging } from '../Logging/types';
@@ -23,6 +25,10 @@ import {
 import { supportedLanguageIds } from '../appGlobals';
 import { NightwatchProcessInfo } from '../NightwatchProcessManagement';
 import { resetDiagnostics, updateCurrentDiagnostics, updateDiagnostics } from '../diagnostic';
+import { Settings } from '../Settings';
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const __non_webpack_require__: typeof require;
 
 let vscode: vsCodeTypes.VSCode;
 export class NightwatchExt {
@@ -39,17 +45,38 @@ export class NightwatchExt {
 
   // The ability to show fails in the problems section
   private failDiagnostics: vsCodeTypes.DiagnosticCollection;
+  private quickSettingPanel: QuickSettingPanel;
+  public nightwatchSettings: Settings;
+  public environmentsPanel: EnvironmentsPanel;
 
   constructor(
     private _vscode: vsCodeTypes.VSCode,
-    private vscodeContext: vsCodeTypes.ExtensionContext,
     private workspaceFolder: vsCodeTypes.WorkspaceFolder,
-    private debugConfigurationProvider: DebugConfigurationProvider
+    private debugConfigurationProvider: DebugConfigurationProvider,
+    private context: vsCodeTypes.ExtensionContext
   ) {
     vscode = _vscode;
-    this.vscodeContext = vscodeContext;
     const getNightwatchExtensionSettings = getExtensionResourceSettings(vscode, workspaceFolder.uri);
-    this.extContext = createNightwatchExtContext(vscode, workspaceFolder, getNightwatchExtensionSettings);
+    this.nightwatchSettings = new Settings(this._vscode, workspaceFolder.uri);
+    this.quickSettingPanel = new QuickSettingPanel(
+      vscode,
+      context.extensionUri,
+      workspaceFolder.uri,
+      this.nightwatchSettings
+    );
+    this.environmentsPanel = new EnvironmentsPanel(
+      vscode,
+      context.extensionUri,
+      workspaceFolder.uri,
+      this.context,
+      this.nightwatchSettings
+    );
+    this.extContext = createNightwatchExtContext(
+      vscode,
+      workspaceFolder,
+      getNightwatchExtensionSettings,
+      this.nightwatchSettings
+    );
     this.debugConfigurationProvider = debugConfigurationProvider;
     this.failDiagnostics = vscode.languages.createDiagnosticCollection(`Nightwatch (${workspaceFolder.name})`);
     this.logging = this.extContext.loggingFactory.create('NightwatchExt');
@@ -67,12 +94,40 @@ export class NightwatchExt {
       getNightwatchExtensionSettings.debugMode ?? false
     );
 
+    const webviewOptions = {
+      webviewOptions: {
+        retainContextWhenHidden: true,
+      },
+    };
+
+    this._vscode.window.registerWebviewViewProvider(
+      QuickSettingPanel.viewType,
+      this.quickSettingPanel,
+      webviewOptions
+    );
+
+    this._vscode.window.registerWebviewViewProvider(
+      EnvironmentsPanel.viewType,
+      this.environmentsPanel,
+      webviewOptions
+    );
+
     // reset the Nightwatch diagnostics
     resetDiagnostics(this.failDiagnostics);
+    this.quickSettingPanel.changeConfig();
   }
 
   public async installNightwatch() {
     installNightwatch(vscode);
+  }
+
+  public updateConfig<T>(configName: string, value: T) {
+    this.nightwatchSettings.set<T>(configName, value);
+  }
+
+  public getConfig<T>(configName: string) {
+    this.nightwatchSettings.json('quickSettings');
+    return this.nightwatchSettings.get<T>(configName);
   }
 
   public activate(): void {
@@ -225,10 +280,15 @@ export class NightwatchExt {
     });
   }
 
-  public triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
+  public async triggerUpdateSettings(newSettings?: NightwatchExtensionResourceSettings): Promise<void> {
     const updatedSettings = newSettings ?? getExtensionResourceSettings(vscode, this.extContext.workspace.uri);
 
-    this.extContext = createNightwatchExtContext(vscode, this.extContext.workspace, updatedSettings);
+    this.extContext = createNightwatchExtContext(
+      vscode,
+      this.extContext.workspace,
+      updatedSettings,
+      this.nightwatchSettings
+    );
     this.processSession = this.createProcessSession();
     this.updateTestFileList();
     return this.startSession();
@@ -288,6 +348,17 @@ export class NightwatchExt {
     }
 
     updateCurrentDiagnostics(sortedResults.fail, this.failDiagnostics, editor);
+  }
+
+  public async updateEnvironmentPanel() {
+    await this._vscode.workspace.findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1).then(async (res) => {
+      delete __non_webpack_require__.cache[__non_webpack_require__.resolve(res[0].path)];
+      const nwConfig = require(/* webpackIgnore: true */ res[0].path);
+      const workspaceState = this.context.workspaceState;
+      workspaceState.update('nwConfig', nwConfig);
+      this.environmentsPanel._addNwEnvironments();
+      this.environmentsPanel.updateNwEnvironments();
+    });
   }
 
   public updateTestFileList(): void {

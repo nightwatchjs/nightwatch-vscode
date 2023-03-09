@@ -92,9 +92,9 @@ export default class TestReconciler {
 
   statusToReconciliationState(status: string): TestReconciliationStateType {
     switch (status) {
-      case 'passed':
+      case 'pass':
         return 'KnownSuccess';
-      case 'failed':
+      case 'fail':
         return 'KnownFail';
       case 'pending':
         return 'KnownSkip';

@@ -23,6 +23,10 @@ export type {
   TextDocumentWillSaveEvent,
   TextEditor,
   Uri,
+  Webview,
+  WebviewView,
+  WebviewViewProvider,
+  WorkspaceConfiguration,
   WorkspaceFolder,
   WorkspaceFoldersChangeEvent,
 } from 'vscode';

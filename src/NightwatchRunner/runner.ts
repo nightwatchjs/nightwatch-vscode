@@ -1,12 +1,15 @@
 import { ChildProcess, spawn } from 'child_process';
 import { EventEmitter } from 'events';
-import { existsSync, readFile } from 'fs';
+import { readFile } from 'fs';
 import { tmpdir } from 'os';
 import path, { join } from 'path';
 import { Logging, LoggingFactory } from '../Logging/types';
+import { NightwatchExtensionResourceSettings, Settings } from '../Settings';
 import { createProcess } from './process';
 import ProjectWorkspace from './projectWorkspace';
 import { Options, OutputType, RunnerEvent } from './types';
+import * as vsCodeTypes from '../types/vscodeTypes';
+import kill from 'tree-kill';
 
 export const runnerEvents: RunnerEvent[] = [
   'executableOutput',
@@ -30,31 +33,61 @@ export default class Runner extends EventEmitter {
   options: Options;
   outputPath: string;
   _createProcess: (projectWorkspace: ProjectWorkspace, args: string[], logging: Logging) => ChildProcess;
-  _exited: boolean;
+  private exited: boolean;
+  private settings: NightwatchExtensionResourceSettings;
+  private nightwatchSettings: Settings;
+  private token?: vsCodeTypes.CancellationToken;
 
-  constructor(workspace: ProjectWorkspace, logger: LoggingFactory, options?: Options) {
+  constructor(
+    workspace: ProjectWorkspace,
+    logger: LoggingFactory,
+    settings: NightwatchExtensionResourceSettings,
+    nightwatchSettings: Settings,
+    token?: vsCodeTypes.CancellationToken,
+    options?: Options
+  ) {
     super();
 
     this._createProcess = createProcess;
     this.workspace = workspace;
     this.options = options || { reporter: options!.reporter };
     this.outputPath = path.join(tmpdir(), `nightwatch_runner_${this.workspace.outputFileSuffix || ''}_${Date.now()}`);
-    this._exited = false;
+    this.exited = false;
     this.logging = logger.create('Runner');
+    this.settings = settings;
+    this.nightwatchSettings = nightwatchSettings;
+    this.token = token;
   }
 
   getArgs(): string[] {
     const args = ['--reporter', this.options.reporter, '--output', this.outputPath];
+    const headlessMode = this.nightwatchSettings.get<boolean>(`quickSettings.headlessMode`);
+    const openReport = this.nightwatchSettings.get<boolean>(`quickSettings.openReport`);
+    const environment = this.nightwatchSettings.get<string>(`quickSettings.environments`);
+    const parallels = this.nightwatchSettings.get<number>(`quickSettings.parallels`);
+
     this.logging('debug', `JSON output location: ${this.outputPath}`);
 
-    if (this.options.args && this.options.args.replace) {
-      this.options.args.args.push(...args);
-      return this.options.args.args;
+    if (headlessMode) {
+      args.push('--headless');
     }
 
-    if (this.options.env) {
-      args.unshift(`-e`, this.options.env);
+    if (openReport) {
+      args.push('--open');
     }
+
+    if (environment.length > 0) {
+      args.push('--env', environment);
+    }
+
+    args.push('--parallel', parallels.toString());
+
+    if (this.options.parameters) {
+      return this.options.parameters.replace
+        ? this.options.parameters.args
+        : [...this.options.parameters.args, ...args];
+    }
+
     return args;
   }
 
@@ -66,19 +99,26 @@ export default class Runner extends EventEmitter {
     const args = this.getArgs();
     this.childProcess = this._createProcess(this.workspace, args, this.logging);
 
+    this.token?.onCancellationRequested(() => {
+      if (this.childProcess) {
+       this.killProcess(this.childProcess, this.childProcess.pid!);
+      }
+    });
+    if (this.token?.isCancellationRequested && this.childProcess) {
+     this.killProcess(this.childProcess, this.childProcess.pid!);
+    }
+
     // TODO: Fix stout/stderr can be null, if childProcess failed to spawn
     this.childProcess.stdout!.on('data', (data: Buffer) => {
       this._parseOutput(data, false, this.logging);
-      // this.emit('executableOutput', data.toString());
     });
 
     this.childProcess.stderr!.on('data', (data) => {
       this._parseOutput(data, true, this.logging);
-      // this.emit('executableStdErr', data);
     });
 
     this.childProcess.on('exit', (code: number | null, signal: string | null) => {
-      this._exited = true;
+      this.exited = true;
 
       this.emit('processExit', code, signal);
     });
@@ -93,7 +133,7 @@ export default class Runner extends EventEmitter {
   }
 
   closeProcess() {
-    if (!this.childProcess || this._exited) {
+    if (!this.childProcess || this.exited) {
       this.logging('debug', 'process has not started or already exited');
       return;
     }
@@ -102,17 +142,7 @@ export default class Runner extends EventEmitter {
       // exit process on windows
       spawn('taskkill', ['/pid', `${this.childProcess.pid}`, '/T', '/F']);
     } else {
-      try {
-        // kill all the process with the same PGID, i.e.
-        // as a detached process, it is the same as the PID of the leader process.
-        process.kill(-this.childProcess.pid!);
-      } catch (error) {
-        this.logging(
-          'warn',
-          `failed to kill process group, this may leave some orphan process ${this.childProcess.pid}, error: ${error}`
-        );
-        this.childProcess.kill();
-      }
+      this.killProcess(this.childProcess, this.childProcess.pid!);
     }
     delete this.childProcess;
   }
@@ -158,5 +188,17 @@ export default class Runner extends EventEmitter {
     const str = data.toString('utf8');
     const match = checks.find(({ regex }) => regex.test(str));
     return match ? match.messageType : outputTypes.unknown;
+  }
+
+  killProcess(childProcess: ChildProcess, pid: number) {
+    try {
+      kill(pid);
+    } catch (error) {
+      this.logging(
+        'warn',
+        `failed to kill process group, this may leave some orphan process ${childProcess.pid}, error: ${error}`
+      );
+      childProcess.kill();
+    }
   }
 }

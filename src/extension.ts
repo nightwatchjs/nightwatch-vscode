@@ -41,6 +41,22 @@ const addSubscriptions = (context: vsCodeTypes.ExtensionContext): void => {
         }
       },
     }),
+    extensionManager.registerCommand({
+      type: 'all-workspaces',
+      name: 'headlessMode',
+      callback: async (extension) => {
+        const prevConfigValue = extension.getConfig<boolean>('quickSettings.headlessMode');
+        extension.updateConfig<boolean>('quickSettings.headlessMode', !prevConfigValue);
+      },
+    }),
+    extensionManager.registerCommand({
+      type: 'all-workspaces',
+      name: 'openReport',
+      callback: async (extension) => {
+        const prevConfigValue = extension.getConfig<boolean>('quickSettings.openReport');
+        extension.updateConfig<boolean>('quickSettings.openReport', !prevConfigValue);
+      },
+    }),
     vscode.workspace.onDidChangeConfiguration(extensionManager.onDidChangeConfiguration, extensionManager),
     vscode.workspace.onDidChangeWorkspaceFolders(extensionManager.onDidChangeWorkspaceFolders, extensionManager),
     vscode.workspace.onDidCloseTextDocument(extensionManager.onDidCloseTextDocument, extensionManager),

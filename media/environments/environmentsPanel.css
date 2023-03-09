@@ -1,0 +1,24 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  line-height: 22px;
+  cursor: inherit;
+}
+
+section > article {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 12px;
+  justify-content: space-between;
+}
+
+section > article label {
+  cursor: inherit;
+}

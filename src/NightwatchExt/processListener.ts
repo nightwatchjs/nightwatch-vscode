@@ -3,9 +3,9 @@ import * as vscode from 'vscode';
 import { Logging } from '../Logging';
 import { systemErrorMessage, MessageAction } from '../messaging';
 import { NightwatchProcess } from '../NightwatchProcessManagement';
-import { NightwatchProcessEvent } from '../nightwatchProcessManagement';
+import { NightwatchProcessEvent } from '../NightwatchProcessManagement';
 import * as vsCodeTypes from '../types/vscodeTypes';
-import { cleanAnsi } from './helper';
+import { cleanAnsi, getUniqueTestsList } from './helper';
 import { ListenerSession, ListTestFilesCallback, NightwatchRunEvent } from './types';
 
 const POSSIBLE_DRIVER_ERR_REGEX = /([a-zA-z]+)driver cannot be found/im;
@@ -226,7 +226,7 @@ export class ListTestFileListener extends AbstractProcessListener {
 
     try {
       // TODO: Handle empty string
-      const testFileList: string[] = JSON5.parse(this.buffer.toString()).default;
+      const testFileList: string[] = getUniqueTestsList(JSON5.parse(this.buffer.toString()));
       if (!testFileList || testFileList.length === 0) {
         // no test file is probably all right
         this.logging('debug', 'no test file is found');

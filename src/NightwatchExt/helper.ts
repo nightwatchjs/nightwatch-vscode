@@ -1,3 +1,4 @@
+import { Settings } from './../Settings';
 import path from 'path';
 import { nodeBinExtension, pathToNightwatchCommandLine } from '../helpers';
 import { workspaceLogging } from '../Logging';
@@ -13,23 +14,32 @@ export const getExtensionResourceSettings = (
   const config = vscode.workspace.getConfiguration('nightwatch', uri);
 
   return {
-    nightwatchCommandLine: config.get<string>('nightwatchCommandLine'),
-    shell: config.get<string>('shell'),
-    showTerminalOnLaunch: config.get<boolean>('showTerminalOnLaunch'),
-    testPath: path.join(uri.fsPath, config.get<string>('testPath')!),
-    nodeEnv: config.get<NodeEnv | null>('nodeEnv') ?? undefined,
-    debugMode: config.get<boolean>('debugMode'),
+    nightwatchCommandLine: config.get<string>('settings.nightwatchCommandLine'),
+    shell: config.get<string>('settings.shell'),
+    showTerminalOnLaunch: config.get<boolean>('settings.showTerminalOnLaunch'),
+    testPath: path.join(uri.fsPath, config.get<string>('settings.testPath')!),
+    nodeEnv: config.get<NodeEnv | null>('settings.nodeEnv') ?? undefined,
+    debugMode: config.get<boolean>('settings.debugMode'),
+    openReport: config.get<boolean>('quickSettings.openReport'),
+    headlessMode: config.get<boolean>('quickSettings.headlessMode'),
+    parallels: config.get<number>('quickSettings.parallels'),
+    environments: config.get<string>('quickSettings.environments')
   };
 };
 
 export const createNightwatchExtContext = (
   vscode: vsCodeTypes.VSCode,
   workspaceFolder: vsCodeTypes.WorkspaceFolder,
-  settings: NightwatchExtensionResourceSettings
+  settings: NightwatchExtensionResourceSettings,
+  nightwatchSettings: Settings
 ): NightwatchExtContext => {
   const createRunnerWorkspace = async () => {
     const workspaceFolderName = workspaceFolder.name;
-    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(vscode, settings, workspaceFolder);
+    const [nightwatchCommandLine, pathToConfig] = await getNightwatchCommandAndConfig(
+      vscode,
+      settings,
+      workspaceFolder
+    );
     return new ProjectWorkspace(
       settings.testPath ?? '',
       pathToConfig,
@@ -46,6 +56,7 @@ export const createNightwatchExtContext = (
     createRunnerWorkspace,
     loggingFactory: workspaceLogging(workspaceFolder.name, settings.debugMode ?? false),
     settings,
+    nightwatchSettings
   };
 };
 
@@ -64,7 +75,7 @@ const getNightwatchCommandAndConfig = async (
   }
 
   const possibleNightwatchCommandLine =
-    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) || 'nightwatch' + nodeBinExtension;
+    (await pathToNightwatchCommandLine(workspaceFolder.uri.fsPath)) || 'npx nightwatch' + nodeBinExtension;
   return [possibleNightwatchCommandLine, nightwatchConfigFile ?? ''];
 };
 
@@ -85,4 +96,8 @@ export function cleanAnsi(str: string): string {
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
     ''
   );
+}
+
+export function getUniqueTestsList(obj: Record<string, string[]>): string[] {
+  return [...new Set(Object.values(obj).flat(1))] as string[];
 }
