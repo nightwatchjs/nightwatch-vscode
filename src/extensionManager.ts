@@ -61,9 +61,9 @@ export class ExtensionManager {
       .findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1)
       .then((res) => {
         delete __non_webpack_require__.cache[
-          __non_webpack_require__.resolve(res[0].path)
+          __non_webpack_require__.resolve(res[0].fsPath)
         ];
-        const nwConfig = require(/* webpackIgnore: true */ res[0].path);
+        const nwConfig = require(/* webpackIgnore: true */ res[0].fsPath);
         const workspaceState = this.context.workspaceState;
         workspaceState.update('nwConfig', nwConfig);
       });
@@ -125,7 +125,7 @@ export class ExtensionManager {
     const vscode = this._vscode;
     const workspace =
       vscode.workspace.workspaceFolders &&
-      vscode.workspace.workspaceFolders.length <= 1
+        vscode.workspace.workspaceFolders.length <= 1
         ? vscode.workspace.workspaceFolders[0]
         : await vscode.window.showWorkspaceFolderPick();
 

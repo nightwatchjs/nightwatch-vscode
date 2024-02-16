@@ -255,7 +255,7 @@ export class NightwatchExt {
       if (
         (document && editor.document === document) ||
         vscode.workspace.getWorkspaceFolder(editor.document.uri) ===
-          this.extContext.workspace
+        this.extContext.workspace
       ) {
         this.triggerUpdateActiveEditor(editor);
       }
@@ -392,9 +392,9 @@ export class NightwatchExt {
       .findFiles('**/*nightwatch*.conf.{js,ts,cjs}', undefined, 1)
       .then(async (res) => {
         delete __non_webpack_require__.cache[
-          __non_webpack_require__.resolve(res[0].path)
+          __non_webpack_require__.resolve(res[0].fsPath)
         ];
-        const nwConfig = require(/* webpackIgnore: true */ res[0].path);
+        const nwConfig = require(/* webpackIgnore: true */ res[0].fsPath);
         const workspaceState = this.context.workspaceState;
         workspaceState.update('nwConfig', nwConfig);
         this.environmentsPanel._addNwEnvironments();
