@@ -72,3 +72,20 @@ The Environments Panel makes it easy to test across multiple browsers and device
 [nightwatch]: https://nightwatchjs.org/
 [nightwatch-environments]: https://nightwatchjs.org/guide/concepts/test-environments.html
 [vscode-marketplace-link]: https://marketplace.visualstudio.com/items?itemName=browserstackcom.nightwatch
+
+## Development of the Plugin
+
+When working on the plugin you will need to do the following:
+
+- Fork this repository
+- Checkout the fork
+- create a branch to fix the issue e.g. `git checkout -b issueSomeNumber`
+- Install dependencies
+**`npm install .`
+** `npm install -g @vscode/vsce`
+
+Go fix the issue and then use on of the npm commands to package and test. See commands available in the `package.json`
+
+To create an installable extension run the following command from the top level of the repository.
+
+`vsce package`
