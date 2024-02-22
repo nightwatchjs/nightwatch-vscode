@@ -63,9 +63,13 @@ export class ExtensionManager {
         delete __non_webpack_require__.cache[
           __non_webpack_require__.resolve(res[0].path)
         ];
-        const nwConfig = require(/* webpackIgnore: true */ res[0].path);
-        const workspaceState = this.context.workspaceState;
-        workspaceState.update('nwConfig', nwConfig);
+        try {
+          const nwConfig = require(/* webpackIgnore: true */ res[0].path);
+          const workspaceState = this.context.workspaceState;
+          workspaceState.update('nwConfig', nwConfig);
+        } catch (err) {
+          throw new Error(`Error while trying to require Nightwatch config file from "${res[0].path}": ${err}`)
+        }
       });
 
     nightwatchExt.startSession();
