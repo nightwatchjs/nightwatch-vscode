@@ -3,7 +3,7 @@
 	"displayName": "Nightwatch",
 	"description": "Write, Run and Debug your Nightwatch tests in VS Code",
 	"icon": "images/logo.png",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"preview": true,
 	"publisher": "browserstackcom",
 	"author": {
